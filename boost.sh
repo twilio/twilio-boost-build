@@ -578,6 +578,16 @@ using gcc : 4.9~arm64
 EOF
     fi
 
+    if [[ "$1" == "Linux" ]]; then
+        cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
+using gcc : 5.4
+: gcc $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
+:
+: <architecture>x86 <target-os>linux
+;
+EOF
+    fi
+
     doneSection
 }
 
@@ -776,6 +786,40 @@ buildBoost_OSX()
             linkflags="-stdlib=libc++" link=static threading=multi \
             macosx-version=${OSX_SDK_VERSION} install >> "${OSXOUTPUTDIR}/osx-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging OSX. Check log."; exit 1; fi
+    done
+
+    doneSection
+}
+
+#===============================================================================
+
+buildBoost_Linux()
+{
+    cd "$BOOST_SRC"
+    mkdir -p $LINUXOUTPUTDIR
+
+    for VARIANT in debug release; do
+        echo Building $VARIANT 64-bit Boost for Linux
+        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
+            --prefix="$OUTPUT_DIR" \
+            --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86_64" \
+            variant=$VARIANT address-model=64 \
+            cxxflags="${CXX_FLAGS} -std=c++11" \
+            link=static threading=multi \
+            install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
+        if [ $? != 0 ]; then echo "Error staging Linux. Check log."; exit 1; fi
+    done
+
+    for VARIANT in debug release; do
+        echo Building $VARIANT 32-bit Boost for Linux
+        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=clang \
+            --prefix="$OUTPUT_DIR" \
+            --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86" \
+            variant=$VARIANT address-model=32 \
+            cxxflags="${CXX_FLAGS} -std=c++11" \
+            link=static threading=multi \
+            install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
+        if [ $? != 0 ]; then echo "Error staging Linux. Check log."; exit 1; fi
     done
 
     doneSection
@@ -1234,10 +1278,12 @@ IOSOUTPUTDIR="$OUTPUT_DIR/ios"
 TVOSOUTPUTDIR="$OUTPUT_DIR/tvos"
 OSXOUTPUTDIR="$OUTPUT_DIR/osx"
 ANDROIDOUTPUTDIR="$OUTPUT_DIR/android"
+LINUXOUTPUTDIR="$OUTPUT_DIR/linux"
 IOSBUILDDIR="$IOSOUTPUTDIR/build"
 TVOSBUILDDIR="$TVOSOUTPUTDIR/build"
 OSXBUILDDIR="$OSXOUTPUTDIR/build"
 ANDROIDBUILDDIR="$ANDROIDOUTPUTDIR/build"
+LINUXBUILDDIR="$LINUXOUTPUTDIR/build"
 IOSLOG="> $IOSOUTPUTDIR/iphone.log 2>&1"
 IOSFRAMEWORKDIR="$IOSOUTPUTDIR/framework"
 TVOSFRAMEWORKDIR="$TVOSOUTPUTDIR/framework"
@@ -1261,6 +1307,7 @@ printf "$format2" "OSX_ARCHS:" "$OSX_ARCHS" $OSX_ARCH_COUNT
 printf "$format" "BOOST_LIBS:" "$BOOST_LIBS"
 printf "$format" "BOOST_SRC:" "$BOOST_SRC"
 printf "$format" "ANDROIDBUILDDIR:" "$ANDROIDBUILDDIR"
+printf "$format" "LINUXBUILDDIR:" "$LINUXBUILDDIR"
 printf "$format" "IOSBUILDDIR:" "$IOSBUILDDIR"
 printf "$format" "OSXBUILDDIR:" "$OSXBUILDDIR"
 printf "$format" "IOSFRAMEWORKDIR:" "$IOSFRAMEWORKDIR"
@@ -1305,6 +1352,11 @@ if [[ -n $BUILD_OSX ]]; then
     updateBoost "OSX"
     bootstrapBoost "OSX"
     buildBoost_OSX
+fi
+if [[ -n $BUILD_LINUX ]]; then
+    updateBoost "Linux"
+    bootstrapBoost "Linux"
+    buildBoost_Linux
 fi
 
 if [ -z $NO_FRAMEWORK ]; then
