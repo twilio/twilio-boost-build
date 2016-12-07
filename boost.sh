@@ -28,7 +28,7 @@
 #
 #===============================================================================
 
-BOOST_LIBS="atomic chrono date_time exception filesystem program_options random signals system thread test"
+BOOST_LIBS="atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer"
 
 BUILD_ANDROID=
 BUILD_IOS=
