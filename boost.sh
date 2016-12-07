@@ -96,6 +96,9 @@ OPTIONS:
     -h | --help
         Display these options and exit.
 
+    -android
+        Build for the Android platform.
+
     -ios
         Build for the iOS platform.
 
@@ -105,6 +108,9 @@ OPTIONS:
     -tvos
         Build for the tvOS platform.
     
+    -linux
+        Build for the Linux platform.
+
     --boost-version [num]
         Specify which version of Boost to build. Defaults to $BOOST_VERSION.
 
@@ -1027,6 +1033,7 @@ EXTRA_IOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mios-version-min=$MIN_IOS_VERSION
 EXTRA_TVOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mtvos-version-min=$MIN_TVOS_VERSION"
 EXTRA_OSX_FLAGS="$EXTRA_FLAGS -mmacosx-version-min=$MIN_OSX_VERSION"
 EXTRA_ANDROID_FLAGS="$EXTRA_FLAGS"
+EXTRA_LINUX_FLAGS="$EXTRA_FLAGS"
 
 BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
 BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
@@ -1061,6 +1068,7 @@ printf "$format" "MIN_OSX_VERSION:" "$MIN_OSX_VERSION"
 printf "$format2" "OSX_ARCHS:" "$OSX_ARCHS" $OSX_ARCH_COUNT
 printf "$format" "BOOST_LIBS:" "$BOOST_LIBS"
 printf "$format" "BOOST_SRC:" "$BOOST_SRC"
+printf "$format" "ANDROIDBUILDDIR:" "$ANDROIDBUILDDIR"
 printf "$format" "IOSBUILDDIR:" "$IOSBUILDDIR"
 printf "$format" "OSXBUILDDIR:" "$OSXBUILDDIR"
 printf "$format" "IOSFRAMEWORKDIR:" "$IOSFRAMEWORKDIR"
