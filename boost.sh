@@ -68,8 +68,7 @@ COMPILER="$XCODE_ROOT/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++"
 THREADS="-j$(getconf _NPROCESSORS_ONLN)"
 
 CURRENT_DIR=`pwd`
-SRCDIR="$CURRENT_DIR/src"
-PREFIX=
+SRCDIR="$CURRENT_DIR/target/src"
 
 IOS_ARM_DEV_CMD="xcrun --sdk iphoneos"
 IOS_SIM_DEV_CMD="xcrun --sdk iphonesimulator"
@@ -210,7 +209,7 @@ parseArgs()
                 if [ -n $2 ]; then
                     BOOST_VERSION=$2
                     BOOST_VERSION2="${BOOST_VERSION//./_}"
-                    BOOST_TARBALL="$CURRENT_DIR/boost_$BOOST_VERSION2.tar.bz2"
+                    BOOST_TARBALL="$CURRENT_DIR/target/boost_$BOOST_VERSION2.tar.bz2"
                     BOOST_SRC="$SRCDIR/boost_${BOOST_VERSION2}"
                     shift
                 else
@@ -1027,9 +1026,9 @@ EXTRA_TVOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mtvos-version-min=$MIN_TVOS_VERS
 EXTRA_OSX_FLAGS="$EXTRA_FLAGS -mmacosx-version-min=$MIN_OSX_VERSION"
 EXTRA_ANDROID_FLAGS="$EXTRA_FLAGS"
 
-BOOST_TARBALL="$CURRENT_DIR/boost_$BOOST_VERSION2.tar.bz2"
+BOOST_TARBALL="$CURRENT_DIR/target/boost_$BOOST_VERSION2.tar.bz2"
 BOOST_SRC="$SRCDIR/boost_${BOOST_VERSION2}"
-OUTPUT_DIR="$CURRENT_DIR/build/boost/$BOOST_VERSION"
+OUTPUT_DIR="$CURRENT_DIR/target/build/boost/$BOOST_VERSION"
 IOSOUTPUTDIR="$OUTPUT_DIR/ios"
 TVOSOUTPUTDIR="$OUTPUT_DIR/tvos"
 OSXOUTPUTDIR="$OUTPUT_DIR/osx"
