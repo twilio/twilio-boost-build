@@ -35,6 +35,7 @@ BUILD_IOS=
 BUILD_TVOS=
 BUILD_OSX=
 BUILD_LINUX=
+UNPACK=
 CLEAN=
 NO_CLEAN=
 NO_FRAMEWORK=
@@ -110,6 +111,9 @@ OPTIONS:
     
     -linux
         Build for the Linux platform.
+
+    --unpack
+        Only unpack sources, dont build.
 
     --boost-version [num]
         Specify which version of Boost to build. Defaults to $BOOST_VERSION.
@@ -292,6 +296,12 @@ parseArgs()
 
             --no-clean)
                 NO_CLEAN=1
+                ;;
+
+            --unpack)
+                UNPACK=1
+                NO_CLEAN=1
+                NO_FRAMEWORK=1
                 ;;
 
             --no-framework)
@@ -1003,12 +1013,20 @@ EOF
 
 parseArgs "$@"
 
-if [[ -z $BUILD_IOS && -z $BUILD_TVOS && -z $BUILD_OSX && -z $BUILD_ANDROID && -z $BUILD_LINUX ]]; then
+if [[ -z $UNPACK && -z $BUILD_IOS && -z $BUILD_TVOS && -z $BUILD_OSX && -z $BUILD_ANDROID && -z $BUILD_LINUX ]]; then
     BUILD_ANDROID=1
     BUILD_IOS=1
     BUILD_TVOS=1
     BUILD_OSX=1
     BUILD_LINUX=1
+fi
+
+if [[ -n $UNPACK ]]; then
+    BUILD_ANDROID=
+    BUILD_IOS=
+    BUILD_TVOS=
+    BUILD_OSX=
+    BUILD_LINUX=
 fi
 
 # The EXTRA_FLAGS definition works around a thread race issue in
@@ -1088,6 +1106,10 @@ fi
 downloadBoost
 unpackBoost
 inventMissingHeaders
+
+if [ -n "$UNPACK" ]; then
+    exit
+fi
 
 if [[ -n $BUILD_ANDROID ]]; then
     updateBoost "Android"
