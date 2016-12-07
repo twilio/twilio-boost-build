@@ -603,40 +603,46 @@ buildBoost_Android()
     #     "install"));
 
     echo Building Boost for Android Emulator
+
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
-            --prefix="$ANDROIDOUTPUTDIR/prefix" toolset=gcc-4.9~x86 \
+            --prefix="$ANDROIDOUTPUTDIR/prefix" \
+            --libdir="$ANDROIDOUTPUTDIR/prefix/$VARIANT/x86" toolset=gcc-4.9~x86 \
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
             address-model=32 variant=$VARIANT \
-            link=static threading=multi stage >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
+            link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging Android. Check log."; exit 1; fi
     done
 
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
-            --prefix="$ANDROIDOUTPUTDIR/prefix" toolset=gcc-4.9~x86_64 \
+            --prefix="$ANDROIDOUTPUTDIR/prefix" \
+            --libdir="$ANDROIDOUTPUTDIR/prefix/$VARIANT/x86_64" toolset=gcc-4.9~x86_64 \
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
             address-model=64 variant=$VARIANT \
-            link=static threading=multi stage >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
+            link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging Android. Check log."; exit 1; fi
     done
 
     echo Building Boost for Android
+
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
-            --prefix="$ANDROIDOUTPUTDIR/prefix" toolset=gcc-4.9~arm \
+            --prefix="$ANDROIDOUTPUTDIR/prefix" \
+            --libdir="$ANDROIDOUTPUTDIR/prefix/$VARIANT/arm" toolset=gcc-4.9~arm \
             architecture=arm target-os=android \
             address-model=32 variant=$VARIANT \
-            link=static threading=multi stage >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
+            link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error installing Android. Check log."; exit 1; fi
     done
 
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
-            --prefix="$ANDROIDOUTPUTDIR/prefix" toolset=gcc-4.9~arm64 \
+            --prefix="$ANDROIDOUTPUTDIR/prefix" \
+            --libdir="$ANDROIDOUTPUTDIR/prefix/$VARIANT/arm64" toolset=gcc-4.9~arm64 \
             architecture=arm target-os=android \
             address-model=64 variant=$VARIANT \
-            link=static threading=multi stage >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
+            link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error installing Android. Check log."; exit 1; fi
     done
 
