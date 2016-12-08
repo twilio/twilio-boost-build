@@ -42,6 +42,7 @@ NO_FRAMEWORK=
 
 BOOST_VERSION=1.62.0
 BOOST_VERSION2=1_62_0
+BEAST_VERSION=1.0.0-b20
 
 MIN_IOS_VERSION=8.0
 IOS_SDK_VERSION=`xcrun --sdk iphoneos --show-sdk-version`
@@ -70,6 +71,7 @@ THREADS="-j$(getconf _NPROCESSORS_ONLN)"
 
 CURRENT_DIR=`pwd`
 SRCDIR="$CURRENT_DIR/src"
+BEAST_DIR="$CURRENT_DIR/src/beast"
 
 IOS_ARM_DEV_CMD="xcrun --sdk iphoneos"
 IOS_SIM_DEV_CMD="xcrun --sdk iphonesimulator"
@@ -413,6 +415,17 @@ unpackBoost()
     [ -d $SRCDIR ]    || mkdir -p "$SRCDIR"
     [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xfj "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
     echo "    ...unpacked as $BOOST_SRC"
+
+    doneSection
+}
+
+unpackBeast()
+{
+    [ -d "$BEAST_DIR" ] && return
+
+    echo Cloning Beast into "$BEAST_DIR"...
+
+    git clone git@github.com:vinniefalco/Beast.git "$BEAST_DIR"
 
     doneSection
 }
@@ -1105,6 +1118,7 @@ fi
 
 downloadBoost
 unpackBoost
+unpackBeast
 inventMissingHeaders
 
 if [ -n "$UNPACK" ]; then
