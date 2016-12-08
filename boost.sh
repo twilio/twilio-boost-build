@@ -783,6 +783,149 @@ buildBoost_OSX()
 
 #===============================================================================
 
+packageHeaders()
+{
+    BUILDDIR="$CURRENT_DIR/target/distributions"
+    mkdir -p "${BUILDDIR}"
+    mkdir -p "${OUTPUT_DIR}/include/beast/"
+
+    echo Packaging Boost headers
+
+    (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/boost-headers-$BOOST_VERSION-all.tar.bz2" include/boost/*)
+
+    echo Packaging Beast headers
+
+    cp -rf $SRCDIR/beast/include/beast/* $OUTPUT_DIR/include/beast/
+    cp -rf $SRCDIR/beast/extras/beast/* $OUTPUT_DIR/include/beast/
+
+    (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/beast-headers-$BEAST_VERSION-all.tar.bz2" include/beast/*)
+}
+
+#===============================================================================
+
+packageLibEntry()
+{
+    BUILDDIR="$CURRENT_DIR/target/distributions"
+    mkdir -p "${BUILDDIR}"
+
+    DIR="$1"
+    NAME="$2"
+
+    echo Packaging boost-$NAME...
+
+    if [[ -z "$3" ]]; then
+        PATTERN="-name *libboost_${NAME}*"
+    else
+        PATTERN="-name NOTMATCHED"
+        for PAT in $3; do
+            PATTERN="$PATTERN -o -name *libboost_${PAT}*"
+        done
+    fi
+
+    (cd $OUTPUT_DIR/$DIR; find lib -type f $PATTERN | tar cvjf "$BUILDDIR/boost-$NAME-$BOOST_VERSION-$DIR.tar.bz2" -T -)
+}
+
+packageLibSet()
+{
+    echo Packaging Boost libraries...
+    DIR=$1
+    packageLibEntry $DIR atomic
+    packageLibEntry $DIR chrono
+    packageLibEntry $DIR container
+    packageLibEntry $DIR date_time
+    packageLibEntry $DIR exception
+    packageLibEntry $DIR filesystem
+    packageLibEntry $DIR iostreams
+    packageLibEntry $DIR metaparse
+    packageLibEntry $DIR program_options
+    packageLibEntry $DIR random
+    packageLibEntry $DIR regex
+    packageLibEntry $DIR serialization "serialization wserialization"
+    packageLibEntry $DIR system
+    packageLibEntry $DIR test "prg_exec_monitor test_exec_monitor unit_test_framework"
+    packageLibEntry $DIR thread
+    packageLibEntry $DIR timer
+}
+
+
+packageLibs()
+{
+    if [[ -n "$BUILD_ANDROID" ]]; then
+        packageLibSet "android"
+    fi
+
+    if [[ -n "$BUILD_IOS" ]]; then
+        packageLibSet "ios"
+    fi
+
+    if [[ -n "$BUILD_TVOS" ]]; then
+        packageLibSet "tvos"
+    fi
+
+    if [[ -n "$BUILD_OSX" ]]; then
+        packageLibSet "osx"
+    fi
+
+    if [[ -n "$BUILD_LINUX" ]]; then
+        packageLibSet "linux"
+    fi
+}
+
+#===============================================================================
+
+# Uses maven, but see
+# http://stackoverflow.com/questions/4029532/upload-artifacts-to-nexus-without-maven
+# for how to do it using plain curl...
+# 
+deployFile()
+{
+    ARTIFACT=$1
+    FILE=$2
+    CLASSIFIER=$3
+
+    mvn deploy:deploy-file \
+        -Durl=$REPO_URL \
+        -DrepositoryId=$REPO_ID \
+        -DgroupId=org.boost \
+        -DartifactId=$ARTIFACT \
+        -Dclassifier=$CLASSIFIER \
+        -Dversion=$BOOST_VERSION \
+        -DgeneratePom=true \
+        -Dpackaging=tar.bz2 \
+        -Dfile=$FILE
+}
+
+deployToNexus()
+{
+    BUILDDIR="$CURRENT_DIR/target/distributions"
+
+    deployFile boost-headers "$BUILDDIR/boost-headers-$BOOST_VERSION-all.tar.bz2" all
+    deployFile beast-headers "$BUILDDIR/beast-headers-$BEAST_VERSION-all.tar.bz2" all
+
+    if [[ -n "$BUILD_ANDROID" ]]; then
+        for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
+            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-android.tar.bz2" android
+        done
+    fi
+    if [[ -n "$BUILD_IOS" ]]; then
+        for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
+            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-ios.tar.bz2" ios
+        done
+    fi
+    if [[ -n "$BUILD_OSX" ]]; then
+        for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
+            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-osx.tar.bz2" osx
+        done
+    fi
+    if [[ -n "$BUILD_LINUX" ]]; then
+        for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
+            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-linux.tar.bz2" linux
+        done
+    fi
+}
+
+#===============================================================================
+
 unpackArchive()
 {
     BUILDDIR="$1"
@@ -1180,5 +1323,10 @@ if [ -z $NO_FRAMEWORK ]; then
         buildFramework "$OSXFRAMEWORKDIR" "$OSXOUTPUTDIR"
     fi
 fi
+
+packageHeaders
+packageLibs
+
+deployToNexus
 
 echo "Completed successfully"
