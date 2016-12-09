@@ -1257,14 +1257,12 @@ fi
 
 # Todo: perhaps add these
 # -DBOOST_SP_USE_SPINLOCK
-# -std=c++11
 # -stdlib=libc++
 
 # Must set these after parseArgs to fill in overriden values
 # Todo: -g -DNDEBUG are for debug builds only...
 EXTRA_FLAGS="-DBOOST_AC_USE_PTHREADS -DBOOST_SP_USE_PTHREADS \
-    -fvisibility=hidden -fvisibility-inlines-hidden \
-    -Wno-unused-local-typedef"
+    -fvisibility=hidden -fvisibility-inlines-hidden -Wno-unused-local-typedef"
 EXTRA_IOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mios-version-min=$MIN_IOS_VERSION"
 EXTRA_TVOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mtvos-version-min=$MIN_TVOS_VERSION"
 EXTRA_OSX_FLAGS="$EXTRA_FLAGS -mmacosx-version-min=$MIN_OSX_VERSION"
