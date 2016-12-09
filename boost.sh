@@ -580,10 +580,9 @@ EOF
 
     if [[ "$1" == "Linux" ]]; then
         cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
-using gcc : 5.4
-: gcc $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
+using gcc : : g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
 :
-: <architecture>x86 <target-os>linux
+<architecture>x86 <target-os>linux
 ;
 EOF
     fi
