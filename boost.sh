@@ -926,6 +926,7 @@ deployFile()
     ARTIFACT=$1
     FILE=$2
     CLASSIFIER=$3
+    VERSION=$4
 
     mvn deploy:deploy-file \
         -Durl=$REPO_URL \
@@ -933,7 +934,7 @@ deployFile()
         -DgroupId=org.boost \
         -DartifactId=$ARTIFACT \
         -Dclassifier=$CLASSIFIER \
-        -Dversion=$BOOST_VERSION \
+        -Dversion=$VERSION \
         -DgeneratePom=true \
         -Dpackaging=tar.bz2 \
         -Dfile=$FILE
@@ -943,27 +944,27 @@ deployToNexus()
 {
     BUILDDIR="$CURRENT_DIR/target/distributions"
 
-    deployFile boost-headers "$BUILDDIR/boost-headers-$BOOST_VERSION-all.tar.bz2" all
-    deployFile beast-headers "$BUILDDIR/beast-headers-$BEAST_VERSION-all.tar.bz2" all
+    deployFile boost-headers "$BUILDDIR/boost-headers-$BOOST_VERSION-all.tar.bz2" all $BOOST_VERSION
+    deployFile beast-headers "$BUILDDIR/beast-headers-$BEAST_VERSION-all.tar.bz2" all $BEAST_VERSION
 
     if [[ -n "$BUILD_ANDROID" ]]; then
         for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
-            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-android.tar.bz2" android
+            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-android.tar.bz2" android $BOOST_VERSION
         done
     fi
     if [[ -n "$BUILD_IOS" ]]; then
         for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
-            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-ios.tar.bz2" ios
+            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-ios.tar.bz2" ios $BOOST_VERSION
         done
     fi
     if [[ -n "$BUILD_OSX" ]]; then
         for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
-            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-osx.tar.bz2" osx
+            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-osx.tar.bz2" osx $BOOST_VERSION
         done
     fi
     if [[ -n "$BUILD_LINUX" ]]; then
         for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
-            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-linux.tar.bz2" linux
+            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-linux.tar.bz2" linux $BOOST_VERSION
         done
     fi
 }
