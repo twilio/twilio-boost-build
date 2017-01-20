@@ -14,6 +14,33 @@ If not specified, it will attempt to build all. It requires Maven to be installe
 To find the directories from cmake specify two cmake defines, e.g.:
     cmake -DBOOST_INCLUDEDIR=toplevel/include -DBOOST_LIBRARYDIR=toplevel/lib/release/armv7
 
+To put all consumed libraries into single directory so that cmake could find them use this maven
+plugin invocation:
+
+    <plugin>
+        <artifactId>maven-antrun-plugin</artifactId>
+        <executions>
+            <execution>
+                <phase>initialize</phase>
+                <goals>
+                    <goal>run</goal>
+                </goals>
+                <configuration>
+                    <tasks>
+                        <!-- todo copy beast to boost headers... -->
+                        <copy todir="${project.build.directory}/dependency/${build.platform}/boost-headers-${dependencies.boost.version}">
+                            <fileset dir="${project.build.directory}/dependency/${build.platform}/beast-headers-${dependencies.websockets.version}"/>
+                        </copy>
+                        <!-- flatten all libraries to boost/lib so that CMake can find it -->
+                        <copy todir="${project.build.directory}/dependency/${build.platform}/boost">
+                            <fileset dir="${project.build.directory}/dependency/${build.platform}/boost-system-${dependencies.boost.version}"/>
+                        </copy>
+                    </tasks>
+                </configuration>
+            </execution>
+        </executions>
+    </plugin>
+
 
 Attributions
 ============
