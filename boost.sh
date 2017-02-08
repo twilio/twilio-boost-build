@@ -501,8 +501,9 @@ using gcc : 4.9~x86
 <compileflags>-DANDROID
 <compileflags>-D__ANDROID__
 <compileflags>-I$ANDROID_NDK_ROOT/platforms/android-21/arch-x86/usr/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/libs/x86/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libcxx/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/libcxxabi/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/../android/support/include
 ;
 using gcc : 4.9~x86_64
 : $ANDROID_NDK_ROOT/toolchains/x86_64-4.9/prebuilt/$HOSTOS$OSARCH/bin/x86_64-linux-android-g++ $EXTRA_ANDROID_FLAGS
@@ -512,8 +513,9 @@ using gcc : 4.9~x86_64
 <compileflags>-DANDROID
 <compileflags>-D__ANDROID__
 <compileflags>-I$ANDROID_NDK_ROOT/platforms/android-21/arch-x86_64/usr/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/libs/x86_64/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libcxx/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/libcxxabi/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/../android/support/include
 ;
 using gcc : 4.9~arm
 : $ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.9/prebuilt/$HOSTOS$OSARCH/bin/arm-linux-androideabi-g++ $EXTRA_ANDROID_FLAGS
@@ -541,8 +543,9 @@ using gcc : 4.9~arm
 <compileflags>-DANDROID
 <compileflags>-D__ANDROID__
 <compileflags>-I$ANDROID_NDK_ROOT/platforms/android-21/arch-arm/usr/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/libs/armeabi/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libcxx/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/libcxxabi/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/../android/support/include
 # @Moss - Above are the 'oficial' android flags
 <compileflags>-fdata-sections
 <cxxflags>-D__arm__
@@ -567,8 +570,9 @@ using gcc : 4.9~arm64
 <compileflags>-DANDROID
 <compileflags>-D__ANDROID__
 <compileflags>-I$ANDROID_NDK_ROOT/platforms/android-21/arch-arm64/usr/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/gnu-libstdc++/4.9/libs/arm64-v8a/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libcxx/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/libcxxabi/include
+<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/../android/support/include
 # @Moss - Above are the 'oficial' android flags
 <compileflags>-fdata-sections
 <cxxflags>-D__arm__
