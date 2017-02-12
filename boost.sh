@@ -35,6 +35,7 @@ BUILD_IOS=
 BUILD_TVOS=
 BUILD_OSX=
 BUILD_LINUX=
+BUILD_HEADERS=
 UNPACK=
 CLEAN=
 NO_CLEAN=
@@ -110,9 +111,12 @@ OPTIONS:
 
     -tvos
         Build for the tvOS platform.
-    
+
     -linux
         Build for the Linux platform.
+
+    -headers
+        Package headers.
 
     --unpack
         Only unpack sources, dont build.
@@ -215,6 +219,10 @@ parseArgs()
 
             -linux)
                 BUILD_LINUX=1
+                ;;
+
+            -headers)
+                BUILD_HEADERS=1
                 ;;
 
             --boost-version)
@@ -947,8 +955,10 @@ deployToNexus()
 {
     BUILDDIR="$CURRENT_DIR/target/distributions"
 
-    deployFile boost-headers "$BUILDDIR/boost-headers-$BOOST_VERSION-all.tar.bz2" all $BOOST_VERSION
-    deployFile beast-headers "$BUILDDIR/beast-headers-$BEAST_VERSION-all.tar.bz2" all $BEAST_VERSION
+    if [[ -n "$BUILD_HEADERS" ]]; then
+        deployFile boost-headers "$BUILDDIR/boost-headers-$BOOST_VERSION-all.tar.bz2" all $BOOST_VERSION
+        deployFile beast-headers "$BUILDDIR/beast-headers-$BEAST_VERSION-all.tar.bz2" all $BEAST_VERSION
+    fi
 
     if [[ -n "$BUILD_ANDROID" ]]; then
         PLAT="android"
@@ -963,7 +973,7 @@ deployToNexus()
         PLAT="linux"
     fi
 
-    for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
+    for lib in $BOOST_LIBS; do
         deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-$PLAT.tar.bz2" $PLAT $BOOST_VERSION
     done
 }
@@ -1231,12 +1241,13 @@ EOF
 
 parseArgs "$@"
 
-if [[ -z $UNPACK && -z $BUILD_IOS && -z $BUILD_TVOS && -z $BUILD_OSX && -z $BUILD_ANDROID && -z $BUILD_LINUX ]]; then
+if [[ -z $UNPACK && -z $BUILD_IOS && -z $BUILD_TVOS && -z $BUILD_OSX && -z $BUILD_ANDROID && -z $BUILD_LINUX && -z $BUILD_HEADERS ]]; then
     BUILD_ANDROID=1
     BUILD_IOS=1
     BUILD_TVOS=1
     BUILD_OSX=1
     BUILD_LINUX=1
+    BUILD_HEADERS=1
 fi
 
 if [[ -n $UNPACK ]]; then
@@ -1245,6 +1256,7 @@ if [[ -n $UNPACK ]]; then
     BUILD_TVOS=
     BUILD_OSX=
     BUILD_LINUX=
+    BUILD_HEADERS=
 fi
 
 # The EXTRA_FLAGS definition works around a thread race issue in
@@ -1374,7 +1386,9 @@ if [ -z $NO_FRAMEWORK ]; then
     fi
 fi
 
-packageHeaders
+if [[ -n "$BUILD_HEADERS" ]]; then
+    packageHeaders
+fi
 packageLibs
 
 deployToNexus
