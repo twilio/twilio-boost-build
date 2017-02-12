@@ -946,7 +946,7 @@ deployFile()
         -Dversion=$VERSION \
         -DgeneratePom=true \
         -Dpackaging=tar.bz2 \
-        -Dfile=$FILE || exit 1
+        -Dfile=$FILE
 }
 
 deployToNexus()
