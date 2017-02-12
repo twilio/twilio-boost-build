@@ -951,25 +951,21 @@ deployToNexus()
     deployFile beast-headers "$BUILDDIR/beast-headers-$BEAST_VERSION-all.tar.bz2" all $BEAST_VERSION
 
     if [[ -n "$BUILD_ANDROID" ]]; then
-        for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
-            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-android.tar.bz2" android $BOOST_VERSION
-        done
+        plat = "android"
     fi
     if [[ -n "$BUILD_IOS" ]]; then
-        for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
-            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-ios.tar.bz2" ios $BOOST_VERSION
-        done
+        plat = "ios"
     fi
     if [[ -n "$BUILD_OSX" ]]; then
-        for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
-            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-osx.tar.bz2" osx $BOOST_VERSION
-        done
+        plat = "osx"
     fi
     if [[ -n "$BUILD_LINUX" ]]; then
-        for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
-            deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-linux.tar.bz2" linux $BOOST_VERSION
-        done
+        plat = "linux"
     fi
+
+    for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
+        deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-$plat.tar.bz2" $plat $BOOST_VERSION
+    done
 }
 
 #===============================================================================
