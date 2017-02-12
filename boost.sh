@@ -648,11 +648,6 @@ buildBoost_Android()
     #   fi
     # fi
 
-    #     "-q",
-    #     "--prefix="+prefix,
-    #     "--libdir="+libdir,
-    #     "install"));
-
     echo Building Boost for Android Emulator
 
     for VARIANT in debug release; do
