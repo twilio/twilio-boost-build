@@ -842,9 +842,12 @@ packageHeaders()
 {
     BUILDDIR="$CURRENT_DIR/target/distributions"
     mkdir -p "${BUILDDIR}"
+    mkdir -p "${OUTPUT_DIR}/include/boost/"
     mkdir -p "${OUTPUT_DIR}/include/beast/"
 
     echo Packaging Boost headers
+
+    cp -rf $SRCDIR/boost/$BOOST_VERSION/boost/* $OUTPUT_DIR/include/boost/
 
     (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/boost-headers-$BOOST_VERSION-all.tar.bz2" include/boost/*)
 
