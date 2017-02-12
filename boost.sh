@@ -676,7 +676,7 @@ buildBoost_Android()
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/arm" toolset=gcc-4.9~arm \
+            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/armeabi-v7a" toolset=gcc-4.9~arm \
             architecture=arm target-os=android \
             address-model=32 variant=$VARIANT \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
@@ -688,7 +688,7 @@ buildBoost_Android()
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/arm64" toolset=gcc-4.9~arm64 \
+            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/arm64-v8a" toolset=gcc-4.9~arm64 \
             architecture=arm target-os=android \
             address-model=64 variant=$VARIANT \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
