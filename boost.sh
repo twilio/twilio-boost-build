@@ -951,20 +951,20 @@ deployToNexus()
     deployFile beast-headers "$BUILDDIR/beast-headers-$BEAST_VERSION-all.tar.bz2" all $BEAST_VERSION
 
     if [[ -n "$BUILD_ANDROID" ]]; then
-        plat = "android"
+        PLAT="android"
     fi
     if [[ -n "$BUILD_IOS" ]]; then
-        plat = "ios"
+        PLAT="ios"
     fi
     if [[ -n "$BUILD_OSX" ]]; then
-        plat = "osx"
+        PLAT="osx"
     fi
     if [[ -n "$BUILD_LINUX" ]]; then
-        plat = "linux"
+        PLAT="linux"
     fi
 
     for lib in atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer; do
-        deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-$plat.tar.bz2" $plat $BOOST_VERSION
+        deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-$PLAT.tar.bz2" $PLAT $BOOST_VERSION
     done
 }
 
