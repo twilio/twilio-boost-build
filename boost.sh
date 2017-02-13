@@ -783,23 +783,11 @@ buildBoost_OSX()
     mkdir -p $OSXOUTPUTDIR
 
     for VARIANT in debug release; do
-        echo Building $VARIANT 64-bit Boost for OSX
+        echo Building $VARIANT Boost for OSX
         ./b2 $THREADS --build-dir=osx-build --stagedir=osx-build/stage toolset=clang \
             --prefix="$OUTPUT_DIR" \
             --libdir="$OSXOUTPUTDIR/lib/$VARIANT/x86_64" \
-            variant=$VARIANT address-model=64 \
-            cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++ ${OSX_ARCH_FLAGS}" \
-            linkflags="-stdlib=libc++" link=static threading=multi \
-            macosx-version=${OSX_SDK_VERSION} install >> "${OSXOUTPUTDIR}/osx-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging OSX. Check log."; exit 1; fi
-    done
-
-    for VARIANT in debug release; do
-        echo Building $VARIANT 32-bit Boost for OSX
-        ./b2 $THREADS --build-dir=osx-build --stagedir=osx-build/stage toolset=clang \
-            --prefix="$OUTPUT_DIR" \
-            --libdir="$OSXOUTPUTDIR/lib/$VARIANT/x86" \
-            variant=$VARIANT address-model=32 \
+            variant=$VARIANT \
             cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++ ${OSX_ARCH_FLAGS}" \
             linkflags="-stdlib=libc++" link=static threading=multi \
             macosx-version=${OSX_SDK_VERSION} install >> "${OSXOUTPUTDIR}/osx-build.log" 2>&1
