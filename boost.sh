@@ -54,7 +54,7 @@ TVOS_SDK_VERSION=`xcrun --sdk appletvos --show-sdk-version`
 MIN_OSX_VERSION=10.10
 OSX_SDK_VERSION=`xcrun --sdk macosx --show-sdk-version`
 
-OSX_ARCHS="x86_64"
+OSX_ARCHS="x86_64 i386"
 OSX_ARCH_COUNT=0
 OSX_ARCH_FLAGS=""
 for ARCH in $OSX_ARCHS; do
