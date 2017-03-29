@@ -888,7 +888,7 @@ packageLibEntry()
         done
     fi
 
-    (cd $OUTPUT_DIR/$DIR; find lib -type f $PATTERN | tar cvjf "$BUILDDIR/boost-$NAME-${BOOST_VERSION}${TWILIO_SUFFIX}-$DIR.tar.bz2" -T -)
+    (cd $OUTPUT_DIR/$DIR; find lib -type f $PATTERN | tar cvjf "${BUILDDIR}/boost-${NAME}-${BOOST_VERSION}${TWILIO_SUFFIX}-${DIR}.tar.bz2" -T -)
 }
 
 packageLibSet()
@@ -967,8 +967,8 @@ deployToNexus()
     BUILDDIR="$CURRENT_DIR/target/distributions"
 
     if [[ -n "$BUILD_HEADERS" ]]; then
-        deployFile boost-headers "$BUILDDIR/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
-        deployFile beast-headers "$BUILDDIR/beast-headers-${BEAST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BEAST_VERSION}${TWILIO_SUFFIX}
+        deployFile boost-headers "${BUILDDIR}/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
+        deployFile beast-headers "${BUILDDIR}/beast-headers-${BEAST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BEAST_VERSION}${TWILIO_SUFFIX}
     fi
 
     if [[ -n "$BUILD_ANDROID" ]]; then
@@ -985,7 +985,7 @@ deployToNexus()
     fi
 
     for lib in $BOOST_LIBS; do
-        deployFile boost-$lib "$BUILDDIR/boost-$lib-${BOOST_VERSION}${TWILIO_SUFFIX}-$PLAT.tar.bz2" $PLAT ${BOOST_VERSION}${TWILIO_SUFFIX}
+        deployFile boost-${lib} "${BUILDDIR}/boost-${lib}-${BOOST_VERSION}${TWILIO_SUFFIX}-${PLAT}.tar.bz2" ${PLAT} ${BOOST_VERSION}${TWILIO_SUFFIX}
     done
 }
 
