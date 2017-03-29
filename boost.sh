@@ -44,6 +44,7 @@ NO_FRAMEWORK=
 BOOST_VERSION=1.62.0
 BOOST_VERSION2=1_62_0
 BEAST_VERSION=1.0.0-b28
+TWILIO_SUFFIX=
 
 MIN_IOS_VERSION=8.0
 IOS_SDK_VERSION=`xcrun --sdk iphoneos --show-sdk-version`
@@ -123,6 +124,9 @@ OPTIONS:
 
     --boost-version [num]
         Specify which version of Boost to build. Defaults to $BOOST_VERSION.
+
+    --twilio-suffix [sfx]
+        Set suffix for the maven package. Defaults to no suffix.
 
     --boost-libs [libs]
         Specify which libraries to build. Space-separate list.
@@ -231,6 +235,15 @@ parseArgs()
                     BOOST_VERSION2="${BOOST_VERSION//./_}"
                     BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
                     BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
+                    shift
+                else
+                    missingParameter $1
+                fi
+                ;;
+
+            --twilio-suffix)
+                if [ -n $2 ]; then
+                    TWILIO_SUFFIX="$2"
                     shift
                 else
                     missingParameter $1
@@ -844,14 +857,14 @@ packageHeaders()
 
     cp -rf $SRCDIR/boost/$BOOST_VERSION/boost/* $OUTPUT_DIR/include/boost/
 
-    (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/boost-headers-$BOOST_VERSION-all.tar.bz2" include/boost/*)
+    (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" include/boost/*)
 
     echo Packaging Beast headers
 
     cp -rf $SRCDIR/beast/include/beast/* $OUTPUT_DIR/include/beast/
     cp -rf $SRCDIR/beast/extras/beast/* $OUTPUT_DIR/include/beast/
 
-    (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/beast-headers-$BEAST_VERSION-all.tar.bz2" include/beast/*)
+    (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/beast-headers-${BEAST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" include/beast/*)
 }
 
 #===============================================================================
@@ -875,7 +888,7 @@ packageLibEntry()
         done
     fi
 
-    (cd $OUTPUT_DIR/$DIR; find lib -type f $PATTERN | tar cvjf "$BUILDDIR/boost-$NAME-$BOOST_VERSION-$DIR.tar.bz2" -T -)
+    (cd $OUTPUT_DIR/$DIR; find lib -type f $PATTERN | tar cvjf "$BUILDDIR/boost-$NAME-${BOOST_VERSION}${TWILIO_SUFFIX}-$DIR.tar.bz2" -T -)
 }
 
 packageLibSet()
@@ -954,8 +967,8 @@ deployToNexus()
     BUILDDIR="$CURRENT_DIR/target/distributions"
 
     if [[ -n "$BUILD_HEADERS" ]]; then
-        deployFile boost-headers "$BUILDDIR/boost-headers-$BOOST_VERSION-all.tar.bz2" all $BOOST_VERSION
-        deployFile beast-headers "$BUILDDIR/beast-headers-$BEAST_VERSION-all.tar.bz2" all $BEAST_VERSION
+        deployFile boost-headers "$BUILDDIR/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
+        deployFile beast-headers "$BUILDDIR/beast-headers-${BEAST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BEAST_VERSION}${TWILIO_SUFFIX}
     fi
 
     if [[ -n "$BUILD_ANDROID" ]]; then
@@ -972,7 +985,7 @@ deployToNexus()
     fi
 
     for lib in $BOOST_LIBS; do
-        deployFile boost-$lib "$BUILDDIR/boost-$lib-$BOOST_VERSION-$PLAT.tar.bz2" $PLAT $BOOST_VERSION
+        deployFile boost-$lib "$BUILDDIR/boost-$lib-${BOOST_VERSION}${TWILIO_SUFFIX}-$PLAT.tar.bz2" $PLAT ${BOOST_VERSION}${TWILIO_SUFFIX}
     done
 }
 
