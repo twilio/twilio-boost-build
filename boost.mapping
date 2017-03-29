@@ -1,0 +1,36 @@
+# OSX i386 libs are fat and in x86_64 folder 
+
+boost
+  osx
+    x86.32 -> x86_64
+    x86.64 -> x86_64
+  linux
+    x86.32 -> x86
+    x86.64 -> x86_64
+  android
+    x86.32 -> x86
+    x86.64 -> x86_64
+    arm.32 -> armeabi-v7a
+    arm.64 -> arm64-v8a
+  ios
+    x86.32 -> fat-x86
+    x86.64 -> fat-x86
+    arm.32 -> fat-arm
+    arm.64 -> fat-arm
+
+OSX
+<boost.main.32>x86_64</boost.main.32>
+<boost.main.64>x86_64</boost.main.64>
+Linux
+<boost.main.32>x86</boost.main.32>
+<boost.main.64>x86_64</boost.main.64>
+Android
+<boost.main.32>armeabi-v7a</boost.main.32>
+<boost.main.64>arm64-v8a</boost.main.64>
+<boost.sim.32>x86</boost.sim.32>
+<boost.sim.64>x86_64</boost.sim.64>
+iOS
+<boost.main.32>fat-arm</boost.main.32>
+<boost.main.64>fat-arm</boost.main.64>
+<boost.sim.32>fat-x86</boost.sim.32>
+<boost.sim.64>fat-x86</boost.sim.64>
