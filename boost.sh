@@ -1277,7 +1277,9 @@ EXTRA_IOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mios-version-min=$MIN_IOS_VERSION
 EXTRA_TVOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mtvos-version-min=$MIN_TVOS_VERSION"
 EXTRA_OSX_FLAGS="$EXTRA_FLAGS -mmacosx-version-min=$MIN_OSX_VERSION"
 EXTRA_ANDROID_FLAGS="$EXTRA_FLAGS"
-EXTRA_LINUX_FLAGS="$EXTRA_FLAGS"
+# These linux flags are adopted from RTD BuildScripts/CMake/Toolchain-Linux.cmake
+# See there for details.
+EXTRA_LINUX_FLAGS="$EXTRA_FLAGS -D_GLIBCXX_USE_CXX11_ABI=0"
 
 BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
 BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
