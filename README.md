@@ -3,15 +3,15 @@ Boost-Build
 
 Scripts to build boost for different platforms (macOS, iOS, tvOS, watchOS, Linux, Android) and package it as a Maven tarball and/or an Apple Framework.
 
-Libraries are packaged in Twilio style, grouped by variant (debug/release) and then by platform architecture beneath the variant. This makes debug/x86, debug/armv7 etc folders that are consumable
-by Twilio builds.
+Libraries are packaged in Twilio style, grouped by variant (debug/release) and then by platform architecture beneath the variant. This makes debug/x86, debug/armv7 etc folders that are consumable by Twilio builds.
 
 Unpacking these tarballs into a single directory will create all necessary libraries underneath the abovementioned folders together with a top-level includes/boost directory for headers.
 
-To build packages use ./boost.sh with appropriate argument -android, -ios, -osx or -linux.
-If not specified, it will attempt to build all. It requires Maven to be installed.
+To build packages use ./boost.sh with appropriate argument `-android`, `-ios`, `-osx` or `-linux`.
+If not specified, it will attempt to build all. It requires Maven to be installed for deployment - if you do not deploy to Maven-based repositories you can ignore it.
 
 To find the directories from cmake specify two cmake defines, e.g.:
+
     cmake -DBOOST_INCLUDEDIR=toplevel/include -DBOOST_LIBRARYDIR=toplevel/lib/release/armv7
 
 To put all consumed libraries into single directory so that cmake could find them use this maven
