@@ -438,6 +438,12 @@ unpackBoost()
 
     [ -d $SRCDIR ]    || mkdir -p "$SRCDIR"
     [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xfj "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
+
+    curl -L -o boost_1_65_0.patch http://www.boost.org/patches/1_65_0/boost_1_65_0.patch
+    cur_dir=$(pwd)
+
+    (cd "$BOOST_SRC"; patch -p1 < "$cur_dir/boost_1_65_0.patch") || exit 1
+
     echo "    ...unpacked as $BOOST_SRC"
 
     doneSection
@@ -859,14 +865,14 @@ packageHeaders()
 
     echo Packaging Boost headers
 
-    cp -rf $SRCDIR/boost/$BOOST_VERSION/boost/* $OUTPUT_DIR/include/boost/
+    cp -rf $SRCDIR/boost/$BOOST_VERSION/boost/* $OUTPUT_DIR/include/boost/ || exit 1
 
     (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" include/boost/*)
 
     echo Packaging Beast headers
 
-    cp -rf $SRCDIR/beast/include/beast/* $OUTPUT_DIR/include/beast/
-    cp -rf $SRCDIR/beast/extras/beast/* $OUTPUT_DIR/include/beast/
+    cp -rf $SRCDIR/beast/include/beast/* $OUTPUT_DIR/include/beast/ || exit 1
+    cp -rf $SRCDIR/beast/extras/beast/* $OUTPUT_DIR/include/beast/ || exit 1
 
     (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/beast-headers-${BEAST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" include/beast/*)
 }
