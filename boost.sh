@@ -865,20 +865,13 @@ packageHeaders()
     BUILDDIR="$CURRENT_DIR/target/distributions"
     mkdir -p "${BUILDDIR}"
     mkdir -p "${OUTPUT_DIR}/include/boost/"
-    mkdir -p "${OUTPUT_DIR}/include/beast/"
 
-    echo Packaging Boost headers
+    echo Packaging Boost and Beast headers together - prior to official release of beast in boost
 
     cp -rf $SRCDIR/boost/$BOOST_VERSION/boost/* $OUTPUT_DIR/include/boost/ || exit 1
+    cp -rf $SRCDIR/beast/include/boost/* $OUTPUT_DIR/include/boost/ || exit 1
 
     (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" include/boost/*)
-
-    echo Packaging Beast headers
-
-    cp -rf $SRCDIR/beast/include/beast/* $OUTPUT_DIR/include/beast/ || exit 1
-    cp -rf $SRCDIR/beast/extras/beast/* $OUTPUT_DIR/include/beast/ || exit 1
-
-    (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/beast-headers-${BEAST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" include/beast/*)
 }
 
 #===============================================================================
