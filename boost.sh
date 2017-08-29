@@ -43,8 +43,10 @@ NO_FRAMEWORK=
 
 BOOST_VERSION=1.64.0
 BOOST_VERSION2=1_64_0
-BEAST_VERSION=43
-BEAST_COMMIT=dab679cb
+
+BEAST_VERSION=109
+BEAST_COMMIT=526ecc5
+
 TWILIO_SUFFIX=
 
 MIN_IOS_VERSION=8.0
@@ -447,7 +449,7 @@ unpackBeast()
 
     echo Cloning Beast into "$BEAST_DIR"...
 
-    git clone git@github.com:vinniefalco/Beast.git "$BEAST_DIR"
+    git clone git@github.com:boostorg/beast.git "$BEAST_DIR"
     (cd "$BEAST_DIR"; git checkout $BEAST_COMMIT)
 
     doneSection
