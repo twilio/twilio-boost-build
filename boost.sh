@@ -44,6 +44,7 @@ NO_FRAMEWORK=
 BOOST_VERSION=1.64.0
 BOOST_VERSION2=1_64_0
 
+# Beast version is unused now, because we ship beast headers together with boost
 BEAST_VERSION=109
 BEAST_COMMIT=526ecc5
 
@@ -975,7 +976,6 @@ deployToNexus()
 
     if [[ -n "$BUILD_HEADERS" ]]; then
         deployFile boost-headers "${BUILDDIR}/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
-        deployFile beast-headers "${BUILDDIR}/beast-headers-${BEAST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BEAST_VERSION}${TWILIO_SUFFIX}
     fi
 
     if [[ -n "$BUILD_ANDROID" ]]; then
