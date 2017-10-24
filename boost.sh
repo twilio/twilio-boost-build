@@ -519,91 +519,124 @@ EOF
         OSARCH="$(uname -m)"
 
         cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
-using gcc : 4.9~x86
-: $ANDROID_NDK_ROOT/toolchains/x86-4.9/prebuilt/$HOSTOS$OSARCH/bin/i686-linux-android-g++ $EXTRA_ANDROID_FLAGS
+using clang : 5.0~x86
+: $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/$HOSTOS$OSARCH/bin/clang++ $EXTRA_ANDROID_FLAGS
 :
 <architecture>x86 <target-os>android
+<compileflags>--target=i686-none-linux-android
+<compileflags>--gcc-toolchain=$ANDROID_NDK_ROOT/toolchains/x86-4.9/prebuilt/$HOSTOS$OSARCH
+<compileflags>--sysroot=$ANDROID_NDK_ROOT/sysroot
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/android/support/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include/i686-linux-android
 <compileflags>-std=c++11
 <compileflags>-DANDROID
-<compileflags>-D__ANDROID__
-<compileflags>-I$ANDROID_NDK_ROOT/platforms/android-21/arch-x86/usr/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libcxx/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/libcxxabi/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/../android/support/include
-;
-using gcc : 4.9~x86_64
-: $ANDROID_NDK_ROOT/toolchains/x86_64-4.9/prebuilt/$HOSTOS$OSARCH/bin/x86_64-linux-android-g++ $EXTRA_ANDROID_FLAGS
-:
-<architecture>x86 <target-os>android
-<compileflags>-std=c++11
-<compileflags>-DANDROID
-<compileflags>-D__ANDROID__
-<compileflags>-I$ANDROID_NDK_ROOT/platforms/android-21/arch-x86_64/usr/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libcxx/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/libcxxabi/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/../android/support/include
-;
-using gcc : 4.9~arm
-: $ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.9/prebuilt/$HOSTOS$OSARCH/bin/arm-linux-androideabi-g++ $EXTRA_ANDROID_FLAGS
-:
-<architecture>arm <target-os>android
-<compileflags>-std=c++11
-<compileflags>-fexceptions
-<compileflags>-frtti
-<compileflags>-fpic
-<compileflags>-ffunction-sections
-<compileflags>-funwind-tables
-<compileflags>-D__ARM_ARCH_5__
-<compileflags>-D__ARM_ARCH_5T__
-<compileflags>-D__ARM_ARCH_5E__
-<compileflags>-D__ARM_ARCH_5TE__
-<compileflags>-Wno-psabi
-<compileflags>-march=armv5te
-<compileflags>-mtune=xscale
-<compileflags>-msoft-float
-<compileflags>-mthumb
-<compileflags>-fomit-frame-pointer
-<compileflags>-fno-strict-aliasing
-<compileflags>-finline-limit=64
-<compileflags>-Wa,--noexecstack
-<compileflags>-DANDROID
-<compileflags>-D__ANDROID__
-<compileflags>-I$ANDROID_NDK_ROOT/platforms/android-21/arch-arm/usr/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libcxx/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/libcxxabi/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/../android/support/include
-# @Moss - Above are the 'oficial' android flags
-<compileflags>-fdata-sections
-<cxxflags>-D__arm__
-<cxxflags>-D_REENTRANT
-<cxxflags>-D_GLIBCXX__PTHREADS
-;
-using gcc : 4.9~arm64
-: $ANDROID_NDK_ROOT/toolchains/aarch64-linux-android-4.9/prebuilt/$HOSTOS$OSARCH/bin/aarch64-linux-android-g++ $EXTRA_ANDROID_FLAGS
-:
-<architecture>arm <target-os>android
-<compileflags>-std=c++11
-<compileflags>-fpic
+<compileflags>-D__ANDROID_API__=21
 <compileflags>-ffunction-sections
 <compileflags>-funwind-tables
 <compileflags>-fstack-protector-strong
+<compileflags>-fno-limit-debug-info
+<compileflags>-fPIC
 <compileflags>-no-canonical-prefixes
-<compileflags>-fomit-frame-pointer
-<compileflags>-fstrict-aliasing
-<compileflags>-funswitch-loops
-<compileflags>-finline-limit=300
+<compileflags>-mstackrealign
 <compileflags>-Wa,--noexecstack
+<compileflags>-Wformat
+<compileflags>-Werror=format-security
+<compileflags>-Wall
+<compileflags>-Werror
+<compileflags>-Wshadow
+;
+using clang : 5.0~x86_64
+: $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/$HOSTOS$OSARCH/bin/clang++ $EXTRA_ANDROID_FLAGS
+:
+<architecture>x86 <target-os>android
+<compileflags>--target=x86_64-none-linux-android
+<compileflags>--gcc-toolchain=$ANDROID_NDK_ROOT/toolchains/x86_64-4.9/prebuilt/$HOSTOS$OSARCH
+<compileflags>--sysroot=$ANDROID_NDK_ROOT/sysroot
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/android/support/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include/x86_64-linux-android
+<compileflags>-std=c++11
 <compileflags>-DANDROID
-<compileflags>-D__ANDROID__
-<compileflags>-I$ANDROID_NDK_ROOT/platforms/android-21/arch-arm64/usr/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/libcxx/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/libcxxabi/include
-<compileflags>-I$ANDROID_NDK_ROOT/sources/cxx-stl/../android/support/include
-# @Moss - Above are the 'oficial' android flags
-<compileflags>-fdata-sections
-<cxxflags>-D__arm__
-<cxxflags>-D_REENTRANT
-<cxxflags>-D_GLIBCXX__PTHREADS
+<compileflags>-D__ANDROID_API__=21
+<compileflags>-ffunction-sections
+<compileflags>-funwind-tables
+<compileflags>-fstack-protector-strong
+<compileflags>-fno-limit-debug-info
+<compileflags>-fPIC
+<compileflags>-no-canonical-prefixes
+<compileflags>-mstackrealign
+<compileflags>-Wa,--noexecstack
+<compileflags>-Wformat
+<compileflags>-Werror=format-security
+<compileflags>-Wall
+<compileflags>-Werror
+<compileflags>-Wshadow
+;
+using clang : 5.0~arm
+: $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/$HOSTOS$OSARCH/bin/clang++ $EXTRA_ANDROID_FLAGS
+:
+<architecture>arm <target-os>android
+<compileflags>--target=armv7-none-linux-androideabi
+<compileflags>--gcc-toolchain=$ANDROID_NDK_ROOT/toolchains/arm-linux-androideabi-4.9/prebuilt/$HOSTOS$OSARCH
+<compileflags>--sysroot=$ANDROID_NDK_ROOT/sysroot
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/android/support/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include/arm-linux-androideabi
+<compileflags>-std=c++11
+<compileflags>-DANDROID
+<compileflags>-D__ANDROID_API__=16
+<compileflags>-ffunction-sections
+<compileflags>-funwind-tables
+<compileflags>-fstack-protector-strong
+<compileflags>-fno-limit-debug-info
+<compileflags>-fPIC
+<compileflags>-fno-integrated-as
+<compileflags>-no-canonical-prefixes
+<compileflags>-Wa,--noexecstack
+<compileflags>-Wformat
+<compileflags>-Werror=format-security
+<compileflags>-Wall
+<compileflags>-Werror
+<compileflags>-Wshadow
+<compileflags>-march=armv7-a
+<compileflags>-mfloat-abi=softfp
+<compileflags>-mfpu=vfpv3-d16
+<compileflags>-mthumb
+;
+using clang : 5.0~arm64
+: $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/$HOSTOS$OSARCH/bin/clang++ $EXTRA_ANDROID_FLAGS
+:
+<architecture>arm <target-os>android
+<compileflags>--target=aarch64-none-linux-android
+<compileflags>--gcc-toolchain=$ANDROID_NDK_ROOT/toolchains/aarch64-linux-android-4.9/prebuilt/$HOSTOS$OSARCH
+<compileflags>--sysroot=$ANDROID_NDK_ROOT/sysroot
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/cxx-stl/llvm-libc++abi/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/android/support/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include
+<compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include/aarch64-linux-android
+<compileflags>-std=c++11
+<compileflags>-DANDROID
+<compileflags>-D__ANDROID_API__=21
+<compileflags>-ffunction-sections
+<compileflags>-funwind-tables
+<compileflags>-fstack-protector-strong
+<compileflags>-fno-limit-debug-info
+<compileflags>-fPIC
+<compileflags>-no-canonical-prefixes
+<compileflags>-Wa,--noexecstack
+<compileflags>-Wformat
+<compileflags>-Werror=format-security
+<compileflags>-Wall
+<compileflags>-Werror
+<compileflags>-Wshadow
 ;
 EOF
     fi
@@ -671,7 +704,7 @@ buildBoost_Android()
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86" toolset=gcc-4.9~x86 \
+            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86" toolset=clang-5.0~x86 \
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
             address-model=32 variant=$VARIANT \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
@@ -683,7 +716,7 @@ buildBoost_Android()
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86_64" toolset=gcc-4.9~x86_64 \
+            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86_64" toolset=clang-5.0~x86_64 \
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
             address-model=64 variant=$VARIANT \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
@@ -697,7 +730,7 @@ buildBoost_Android()
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/armeabi-v7a" toolset=gcc-4.9~arm \
+            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/armeabi-v7a" toolset=clang-5.0~arm \
             architecture=arm target-os=android \
             address-model=32 variant=$VARIANT \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
@@ -709,7 +742,7 @@ buildBoost_Android()
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/arm64-v8a" toolset=gcc-4.9~arm64 \
+            --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/arm64-v8a" toolset=clang-5.0~arm64 \
             architecture=arm target-os=android \
             address-model=64 variant=$VARIANT \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
