@@ -28,7 +28,8 @@
 #
 #===============================================================================
 
-BOOST_LIBS="atomic chrono container date_time exception filesystem iostreams metaparse program_options random regex serialization system test thread timer"
+BOOST_LIBS="atomic chrono container date_time exception iostreams metaparse program_options random regex serialization system test thread timer"
+#filesystem
 
 BUILD_ANDROID=
 BUILD_IOS=
@@ -926,7 +927,7 @@ packageLibSet()
     packageLibEntry $DIR container
     packageLibEntry $DIR date_time
     packageLibEntry $DIR exception
-    packageLibEntry $DIR filesystem
+    # packageLibEntry $DIR filesystem
     packageLibEntry $DIR iostreams
     packageLibEntry $DIR metaparse
     packageLibEntry $DIR program_options
