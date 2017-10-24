@@ -531,7 +531,6 @@ using clang : 5.0~x86
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/android/support/include
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include/i686-linux-android
-<compileflags>-std=c++11
 <compileflags>-DANDROID
 <compileflags>-D__ANDROID_API__=21
 <compileflags>-ffunction-sections
@@ -560,7 +559,6 @@ using clang : 5.0~x86_64
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/android/support/include
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include/x86_64-linux-android
-<compileflags>-std=c++11
 <compileflags>-DANDROID
 <compileflags>-D__ANDROID_API__=21
 <compileflags>-ffunction-sections
@@ -589,7 +587,6 @@ using clang : 5.0~arm
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/android/support/include
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include/arm-linux-androideabi
-<compileflags>-std=c++11
 <compileflags>-DANDROID
 <compileflags>-D__ANDROID_API__=16
 <compileflags>-ffunction-sections
@@ -622,7 +619,6 @@ using clang : 5.0~arm64
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sources/android/support/include
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include/aarch64-linux-android
-<compileflags>-std=c++11
 <compileflags>-DANDROID
 <compileflags>-D__ANDROID_API__=21
 <compileflags>-ffunction-sections
@@ -706,7 +702,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86" toolset=clang-5.0~x86 \
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
-            address-model=32 variant=$VARIANT \
+            address-model=32 variant=$VARIANT cxxflags=-std=c++14 \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging Android. Check log."; exit 1; fi
     done
@@ -718,7 +714,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86_64" toolset=clang-5.0~x86_64 \
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
-            address-model=64 variant=$VARIANT \
+            address-model=64 variant=$VARIANT cxxflags=-std=c++14 \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging Android. Check log."; exit 1; fi
     done
@@ -732,7 +728,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/armeabi-v7a" toolset=clang-5.0~arm \
             architecture=arm target-os=android \
-            address-model=32 variant=$VARIANT \
+            address-model=32 variant=$VARIANT cxxflags=-std=c++14 \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error installing Android. Check log."; exit 1; fi
     done
@@ -744,7 +740,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/arm64-v8a" toolset=clang-5.0~arm64 \
             architecture=arm target-os=android \
-            address-model=64 variant=$VARIANT \
+            address-model=64 variant=$VARIANT cxxflags=-std=c++14 \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error installing Android. Check log."; exit 1; fi
     done
