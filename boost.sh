@@ -28,8 +28,9 @@
 #
 #===============================================================================
 
-BOOST_LIBS="atomic chrono container date_time exception iostreams metaparse program_options random regex serialization system test thread timer"
-#filesystem
+BOOST_LIBS="iostreams serialization system"
+#atomic chrono container date_time exception filesystem metaparse program_options random regex thread
+# test timer
 
 BUILD_ANDROID=
 BUILD_IOS=
@@ -924,22 +925,22 @@ packageLibSet()
 {
     echo Packaging Boost libraries...
     DIR=$1
-    packageLibEntry $DIR atomic
-    packageLibEntry $DIR chrono
-    packageLibEntry $DIR container
-    packageLibEntry $DIR date_time
-    packageLibEntry $DIR exception
+    # packageLibEntry $DIR atomic
+    # packageLibEntry $DIR chrono
+    # packageLibEntry $DIR container
+    # packageLibEntry $DIR date_time
+    # packageLibEntry $DIR exception
     # packageLibEntry $DIR filesystem
     packageLibEntry $DIR iostreams
-    packageLibEntry $DIR metaparse
-    packageLibEntry $DIR program_options
-    packageLibEntry $DIR random
-    packageLibEntry $DIR regex
+    # packageLibEntry $DIR metaparse
+    # packageLibEntry $DIR program_options
+    # packageLibEntry $DIR random
+    # packageLibEntry $DIR regex
     packageLibEntry $DIR serialization "serialization wserialization"
     packageLibEntry $DIR system
-    packageLibEntry $DIR test "prg_exec_monitor test_exec_monitor unit_test_framework"
-    packageLibEntry $DIR thread
-    packageLibEntry $DIR timer
+    ## packageLibEntry $DIR test "prg_exec_monitor test_exec_monitor unit_test_framework"
+    # packageLibEntry $DIR thread
+    ## packageLibEntry $DIR timer
 }
 
 
