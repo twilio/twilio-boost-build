@@ -518,6 +518,9 @@ EOF
         HOSTOS="$(uname | awk '{ print $1}' | tr [:upper:] [:lower:])-" # darwin or linux
         OSARCH="$(uname -m)"
 
+        # Boost doesn't build with <compileflags>-Werror
+        # Reported to boost-users@lists.boost.org
+
         cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
 using clang : 5.0~x86
 : $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/$HOSTOS$OSARCH/bin/clang++ $EXTRA_ANDROID_FLAGS
@@ -544,7 +547,6 @@ using clang : 5.0~x86
 <compileflags>-Wformat
 <compileflags>-Werror=format-security
 <compileflags>-Wall
-<compileflags>-Werror
 <compileflags>-Wshadow
 ;
 using clang : 5.0~x86_64
@@ -572,7 +574,6 @@ using clang : 5.0~x86_64
 <compileflags>-Wformat
 <compileflags>-Werror=format-security
 <compileflags>-Wall
-<compileflags>-Werror
 <compileflags>-Wshadow
 ;
 using clang : 5.0~arm
@@ -600,7 +601,6 @@ using clang : 5.0~arm
 <compileflags>-Wformat
 <compileflags>-Werror=format-security
 <compileflags>-Wall
-<compileflags>-Werror
 <compileflags>-Wshadow
 <compileflags>-march=armv7-a
 <compileflags>-mfloat-abi=softfp
@@ -631,7 +631,6 @@ using clang : 5.0~arm64
 <compileflags>-Wformat
 <compileflags>-Werror=format-security
 <compileflags>-Wall
-<compileflags>-Werror
 <compileflags>-Wshadow
 ;
 EOF
