@@ -47,8 +47,8 @@ BOOST_VERSION=1.65.1
 BOOST_VERSION2=1_65_1
 
 # Beast version is unused now, because we ship beast headers together with boost
-BEAST_VERSION=123
-BEAST_COMMIT=885b9dfe0b6bfc7be6a9158d60f0760aa43e748a
+BEAST_VERSION=139
+BEAST_COMMIT=6eba0e8f9ef81bf38285a7eee260078684611e2b
 
 TWILIO_SUFFIX=
 
