@@ -50,6 +50,8 @@ BOOST_VERSION2=1_65_1
 BEAST_VERSION=139
 BEAST_COMMIT=6eba0e8f9ef81bf38285a7eee260078684611e2b
 
+ASYNC_COMMIT=0bab0e2b582dfd3f855c86503cdaab73c3db5022
+
 TWILIO_SUFFIX=
 
 MIN_IOS_VERSION=8.0
@@ -79,7 +81,8 @@ THREADS="-j$(getconf _NPROCESSORS_ONLN)"
 
 CURRENT_DIR=`pwd`
 SRCDIR="$CURRENT_DIR/src"
-BEAST_DIR="$CURRENT_DIR/src/beast"
+BEAST_DIR="$SRCDIR/beast"
+ASYNC_DIR="$SRCDIR/asynchronous"
 
 IOS_ARM_DEV_CMD="xcrun --sdk iphoneos"
 IOS_SIM_DEV_CMD="xcrun --sdk iphonesimulator"
@@ -454,6 +457,18 @@ unpackBeast()
 
     git clone git@github.com:boostorg/beast.git "$BEAST_DIR"
     (cd "$BEAST_DIR"; git checkout $BEAST_COMMIT)
+
+    doneSection
+}
+
+unpackAsynchronous()
+{
+    [ -d "$ASYNC_DIR" ] && return
+
+    echo Cloning Async into "$ASYNC_DIR"...
+
+    git clone git@github.com:henry-ch/asynchronous.git "$ASYNC_DIR"
+    (cd "$ASYNC_DIR"; git checkout $ASYNC_COMMIT)
 
     doneSection
 }
@@ -892,7 +907,8 @@ packageHeaders()
     echo Packaging Boost and Beast headers together - prior to official release of beast in boost
 
     cp -rf $SRCDIR/boost/$BOOST_VERSION/boost/* $OUTPUT_DIR/include/boost/ || exit 1
-    cp -rf $SRCDIR/beast/include/boost/* $OUTPUT_DIR/include/boost/ || exit 1
+    cp -rf $BEAST_DIR/include/boost/* $OUTPUT_DIR/include/boost/ || exit 1
+    cp -rf $ASYNC_DIR/boost/* $OUTPUT_DIR/include/boost/ || exit 1
 
     (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" include/boost/*)
 }
@@ -1379,6 +1395,7 @@ fi
 downloadBoost
 unpackBoost
 unpackBeast
+unpackAsynchronous
 inventMissingHeaders
 
 if [ -n "$UNPACK" ]; then
