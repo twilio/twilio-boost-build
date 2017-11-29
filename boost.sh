@@ -712,7 +712,7 @@ buildBoost_Android()
     #   fi
     # fi
 
-    echo Building Boost for Android Emulator
+    echo Building Boost for Android Emulator x86
 
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
@@ -726,6 +726,8 @@ buildBoost_Android()
 
     doneSection
 
+    echo Building Boost for Android Emulator x86_64
+
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
@@ -738,7 +740,7 @@ buildBoost_Android()
 
     doneSection
 
-    echo Building Boost for Android
+    echo Building Boost for Android armv7
 
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
@@ -751,6 +753,8 @@ buildBoost_Android()
     done
 
     doneSection
+
+    echo Building Boost for Android armv8-64
 
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
