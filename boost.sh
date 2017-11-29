@@ -701,7 +701,7 @@ buildBoost_Android()
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
             address-model=32 variant=$VARIANT cxxflags=-std=c++14 \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging Android. Check ${ANDROIDOUTPUTDIR}/android-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
     done
 
     doneSection
@@ -715,7 +715,7 @@ buildBoost_Android()
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
             address-model=64 variant=$VARIANT cxxflags=-std=c++14 \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging Android. Check ${ANDROIDOUTPUTDIR}/android-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
     done
 
     doneSection
@@ -729,7 +729,7 @@ buildBoost_Android()
             architecture=arm target-os=android \
             address-model=32 variant=$VARIANT cxxflags=-std=c++14 \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error installing Android. Check ${ANDROIDOUTPUTDIR}/android-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error installing Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
     done
 
     doneSection
@@ -743,7 +743,7 @@ buildBoost_Android()
             architecture=arm target-os=android \
             address-model=64 variant=$VARIANT cxxflags=-std=c++14 \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error installing Android. Check ${ANDROIDOUTPUTDIR}/android-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error installing Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
     done
 
     doneSection
@@ -766,7 +766,7 @@ buildBoost_iOS()
             toolset=darwin cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++" architecture=arm \
             target-os=iphone macosx-version=iphone-${IOS_SDK_VERSION} define=_LITTLE_ENDIAN \
             link=static threading=multi install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging iPhone. Check ${IOSOUTPUTDIR}/iphone-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging iPhone. Check ${IOSOUTPUTDIR}/iphone-build.log"; exit 1; fi
     done
 
     doneSection
@@ -781,7 +781,7 @@ buildBoost_iOS()
             toolset=darwin-${IOS_SDK_VERSION}~iphonesim cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++" architecture=x86 \
             target-os=iphone macosx-version=iphonesim-${IOS_SDK_VERSION} \
             link=static threading=multi install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging iPhoneSimulator. Check ${IOSOUTPUTDIR}/iphone-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging iPhoneSimulator. Check ${IOSOUTPUTDIR}/iphone-build.log"; exit 1; fi
     done
 
     doneSection
@@ -803,7 +803,7 @@ buildBoost_tvOS()
             toolset=darwin-${TVOS_SDK_VERSION}~appletv \
             cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++" architecture=arm target-os=iphone define=_LITTLE_ENDIAN \
             link=static threading=multi install >> "${TVOSOUTPUTDIR}/tvos-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging AppleTV. Check ${TVOSOUTPUTDIR}/tvos-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging AppleTV. Check ${TVOSOUTPUTDIR}/tvos-build.log"; exit 1; fi
     done
 
     doneSection
@@ -817,7 +817,7 @@ buildBoost_tvOS()
             toolset=darwin-${TVOS_SDK_VERSION}~appletvsim architecture=x86 \
             cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++" target-os=iphone \
             link=static threading=multi install >> "${TVOSOUTPUTDIR}/tvos-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging AppleTVSimulator. Check ${TVOSOUTPUTDIR}/tvos-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging AppleTVSimulator. Check ${TVOSOUTPUTDIR}/tvos-build.log"; exit 1; fi
     done
 
     doneSection
@@ -839,7 +839,7 @@ buildBoost_OSX()
             cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++ ${OSX_ARCH_FLAGS}" \
             linkflags="-stdlib=libc++" link=static threading=multi \
             macosx-version=${OSX_SDK_VERSION} install >> "${OSXOUTPUTDIR}/osx-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging OSX. Check ${OSXOUTPUTDIR}/osx-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging OSX. Check ${OSXOUTPUTDIR}/osx-build.log"; exit 1; fi
     done
 
     doneSection
@@ -861,7 +861,7 @@ buildBoost_Linux()
             cxxflags="${CXX_FLAGS} -std=c++11" \
             link=static threading=multi \
             install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log"; exit 1; fi
     done
 
     for VARIANT in debug release; do
@@ -873,7 +873,7 @@ buildBoost_Linux()
             cxxflags="${CXX_FLAGS} -std=c++11" \
             link=static threading=multi \
             install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log."; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log"; exit 1; fi
     done
 
     doneSection
