@@ -234,7 +234,8 @@ parseArgs()
             --boost-version)
                 if [ -n $2 ]; then
                     BOOST_VERSION=$2
-                    BOOST_VERSION2="${BOOST_VERSION//./_}"
+                    BOOST_VERSION2="${BOOST_VERSION/beta./b}"
+                    BOOST_VERSION2="${BOOST_VERSION2//./_}"
                     BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
                     BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
                     shift
