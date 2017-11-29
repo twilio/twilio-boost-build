@@ -28,9 +28,8 @@
 #
 #===============================================================================
 
-BOOST_LIBS="iostreams serialization system"
-#atomic chrono container date_time exception filesystem metaparse program_options random regex thread
-# test timer
+BOOST_LIBS="iostreams serialization system test"
+#atomic chrono container date_time exception filesystem metaparse program_options random regex thread timer
 
 BUILD_ANDROID=
 BUILD_IOS=
@@ -954,7 +953,7 @@ packageLibSet()
     # packageLibEntry $DIR regex
     packageLibEntry $DIR serialization "serialization wserialization"
     packageLibEntry $DIR system
-    ## packageLibEntry $DIR test "prg_exec_monitor test_exec_monitor unit_test_framework"
+    packageLibEntry $DIR test "prg_exec_monitor test_exec_monitor unit_test_framework"
     # packageLibEntry $DIR thread
     ## packageLibEntry $DIR timer
 }
