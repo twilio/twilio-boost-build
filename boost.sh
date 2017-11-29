@@ -28,8 +28,7 @@
 #
 #===============================================================================
 
-BOOST_LIBS="iostreams serialization system test"
-#atomic chrono container date_time exception filesystem metaparse program_options random regex thread timer
+BOOST_LIBS="atomic container date_time exception iostreams program_options random regex serialization system test"
 
 BUILD_ANDROID=
 BUILD_IOS=
@@ -42,12 +41,8 @@ CLEAN=
 NO_CLEAN=
 NO_FRAMEWORK=
 
-BOOST_VERSION=1.65.1
-BOOST_VERSION2=1_65_1
-
-# Beast version is unused now, because we ship beast headers together with boost
-BEAST_VERSION=139
-BEAST_COMMIT=6eba0e8f9ef81bf38285a7eee260078684611e2b
+BOOST_VERSION=1.66.0.beta.1
+BOOST_VERSION2=1_66_0_b1
 
 ASYNC_COMMIT=0bab0e2b582dfd3f855c86503cdaab73c3db5022
 
@@ -80,7 +75,6 @@ THREADS="-j$(getconf _NPROCESSORS_ONLN)"
 
 CURRENT_DIR=`pwd`
 SRCDIR="$CURRENT_DIR/src"
-BEAST_DIR="$SRCDIR/beast"
 ASYNC_DIR="$SRCDIR/asynchronous"
 
 IOS_ARM_DEV_CMD="xcrun --sdk iphoneos"
@@ -444,18 +438,6 @@ unpackBoost()
     [ -d $SRCDIR ]    || mkdir -p "$SRCDIR"
     [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xfj "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
     echo "    ...unpacked as $BOOST_SRC"
-
-    doneSection
-}
-
-unpackBeast()
-{
-    [ -d "$BEAST_DIR" ] && return
-
-    echo Cloning Beast into "$BEAST_DIR"...
-
-    git clone git@github.com:boostorg/beast.git "$BEAST_DIR"
-    (cd "$BEAST_DIR"; git checkout $BEAST_COMMIT)
 
     doneSection
 }
@@ -905,10 +887,9 @@ packageHeaders()
     mkdir -p "${BUILDDIR}"
     mkdir -p "${OUTPUT_DIR}/include/boost/"
 
-    echo Packaging Boost and Beast headers together - prior to official release of beast in boost
+    echo Packaging Boost and Asynchronous headers together
 
     cp -rf $SRCDIR/boost/$BOOST_VERSION/boost/* $OUTPUT_DIR/include/boost/ || exit 1
-    cp -rf $BEAST_DIR/include/boost/* $OUTPUT_DIR/include/boost/ || exit 1
     cp -rf $ASYNC_DIR/boost/* $OUTPUT_DIR/include/boost/ || exit 1
 
     (cd $OUTPUT_DIR; tar cvjf "$BUILDDIR/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" include/boost/*)
@@ -1397,7 +1378,6 @@ fi
 
 downloadBoost
 unpackBoost
-unpackBeast
 unpackAsynchronous
 inventMissingHeaders
 
