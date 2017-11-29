@@ -1028,9 +1028,11 @@ deployToNexus()
         PLAT="linux"
     fi
 
-    for lib in $BOOST_LIBS; do
-        deployFile boost-${lib} "${BUILDDIR}/boost-${lib}-${BOOST_VERSION}${TWILIO_SUFFIX}-${PLAT}.tar.bz2" ${PLAT} ${BOOST_VERSION}${TWILIO_SUFFIX}
-    done
+    if [[ -n "$PLAT" ]]; then
+        for lib in $BOOST_LIBS; do
+            deployFile boost-${lib} "${BUILDDIR}/boost-${lib}-${BOOST_VERSION}${TWILIO_SUFFIX}-${PLAT}.tar.bz2" ${PLAT} ${BOOST_VERSION}${TWILIO_SUFFIX}
+        done
+    fi
 }
 
 #===============================================================================
