@@ -1358,6 +1358,7 @@ printf "$format" "MIN_OSX_VERSION:" "$MIN_OSX_VERSION"
 printf "$format2" "OSX_ARCHS:" "$OSX_ARCHS" $OSX_ARCH_COUNT
 printf "$format" "BOOST_LIBS:" "$BOOST_LIBS"
 printf "$format" "BOOST_SRC:" "$BOOST_SRC"
+printf "$format" "ANDROID_NDK_ROOT:" "$ANDROID_NDK_ROOT"
 printf "$format" "ANDROIDBUILDDIR:" "$ANDROIDBUILDDIR"
 printf "$format" "LINUXBUILDDIR:" "$LINUXBUILDDIR"
 printf "$format" "IOSBUILDDIR:" "$IOSBUILDDIR"
