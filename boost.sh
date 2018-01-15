@@ -924,24 +924,16 @@ packageLibSet()
 {
     echo Packaging Boost libraries...
     DIR=$1
-    # packageLibEntry $DIR atomic
-    # packageLibEntry $DIR chrono
-    # packageLibEntry $DIR container
-    # packageLibEntry $DIR date_time
-    # packageLibEntry $DIR exception
-    # packageLibEntry $DIR filesystem
-    packageLibEntry $DIR iostreams
-    # packageLibEntry $DIR metaparse
-    # packageLibEntry $DIR program_options
-    # packageLibEntry $DIR random
-    # packageLibEntry $DIR regex
-    packageLibEntry $DIR serialization "serialization wserialization"
-    packageLibEntry $DIR system
-    packageLibEntry $DIR test "prg_exec_monitor test_exec_monitor unit_test_framework"
-    # packageLibEntry $DIR thread
-    ## packageLibEntry $DIR timer
+    for lib in $BOOST_LIBS; do
+        if [ "$lib" == "serialization" ]; then
+            packageLibEntry $DIR serialization "serialization wserialization"
+        elif [ "$lib" == "test" ]; then
+            packageLibEntry $DIR test "prg_exec_monitor test_exec_monitor unit_test_framework"
+        else
+            packageLibEntry $DIR $lib
+        fi
+    done
 }
-
 
 packageLibs()
 {
