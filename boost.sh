@@ -1306,7 +1306,11 @@ fi
 
 # Must set these after parseArgs to fill in overriden values
 # Todo: -g -DNDEBUG are for debug builds only...
+# Boost.test defines are needed to build correct instrumentable boost_unit_test_framework static lib
+# it does not affect the functionality of <boost/test/included/unit_test.hpp> single-header usage.
+# See http://www.boost.org/doc/libs/1_66_0/libs/test/doc/html/boost_test/adv_scenarios/static_lib_customizations/entry_point.html
 EXTRA_FLAGS="-DBOOST_AC_USE_PTHREADS -DBOOST_SP_USE_PTHREADS \
+    -DBOOST_TEST_NO_MAIN -DBOOST_TEST_ALTERNATIVE_INIT_API \
     -fvisibility=hidden -fvisibility-inlines-hidden -Wno-unused-local-typedef"
 EXTRA_IOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mios-version-min=$MIN_IOS_VERSION"
 EXTRA_TVOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mtvos-version-min=$MIN_TVOS_VERSION"
