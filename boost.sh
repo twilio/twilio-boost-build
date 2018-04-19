@@ -983,6 +983,16 @@ deployFile()
         -Dfile=$FILE
 }
 
+deployPlat()
+{
+    PLAT=$1
+    BUILDDIR=$2
+
+    for lib in $BOOST_LIBS; do
+        deployFile boost-${lib} "${BUILDDIR}/boost-${lib}-${BOOST_VERSION}${TWILIO_SUFFIX}-${PLAT}.tar.bz2" ${PLAT} ${BOOST_VERSION}${TWILIO_SUFFIX}
+    done
+}
+
 deployToNexus()
 {
     BUILDDIR="$CURRENT_DIR/target/distributions"
@@ -992,22 +1002,16 @@ deployToNexus()
     fi
 
     if [[ -n "$BUILD_ANDROID" ]]; then
-        PLAT="android"
+        deployPlat "android" "$BUILDDIR"
     fi
     if [[ -n "$BUILD_IOS" ]]; then
-        PLAT="ios"
+        deployPlat "ios" "$BUILDDIR"
     fi
     if [[ -n "$BUILD_OSX" ]]; then
-        PLAT="osx"
+        deployPlat "osx" "$BUILDDIR"
     fi
     if [[ -n "$BUILD_LINUX" ]]; then
-        PLAT="linux"
-    fi
-
-    if [[ -n "$PLAT" ]]; then
-        for lib in $BOOST_LIBS; do
-            deployFile boost-${lib} "${BUILDDIR}/boost-${lib}-${BOOST_VERSION}${TWILIO_SUFFIX}-${PLAT}.tar.bz2" ${PLAT} ${BOOST_VERSION}${TWILIO_SUFFIX}
-        done
+        deployPlat "linux" "$BUILDDIR"
     fi
 }
 
