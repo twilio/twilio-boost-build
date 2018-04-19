@@ -700,7 +700,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86" toolset=clang-5.0~x86 \
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
-            address-model=32 variant=$VARIANT cxxflags=-std=c++14 \
+            address-model=32 variant=$VARIANT cxxflags="${CPPSTD}" \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
     done
@@ -714,7 +714,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86_64" toolset=clang-5.0~x86_64 \
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
-            address-model=64 variant=$VARIANT cxxflags=-std=c++14 \
+            address-model=64 variant=$VARIANT cxxflags="${CPPSTD}" \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
     done
@@ -728,7 +728,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/armeabi-v7a" toolset=clang-5.0~arm \
             architecture=arm target-os=android \
-            address-model=32 variant=$VARIANT cxxflags=-std=c++14 \
+            address-model=32 variant=$VARIANT cxxflags="${CPPSTD}" \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error installing Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
     done
@@ -742,7 +742,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/arm64-v8a" toolset=clang-5.0~arm64 \
             architecture=arm target-os=android \
-            address-model=64 variant=$VARIANT cxxflags=-std=c++14 \
+            address-model=64 variant=$VARIANT cxxflags="${CPPSTD}" \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error installing Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
     done
@@ -763,9 +763,10 @@ buildBoost_iOS()
         ./b2 $THREADS --build-dir=iphone-build --stagedir=iphone-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/fat-arm" \
-            variant=$VARIANT \
-            toolset=darwin cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++" architecture=arm \
-            target-os=iphone macosx-version=iphone-${IOS_SDK_VERSION} define=_LITTLE_ENDIAN \
+            variant=$VARIANT toolset=darwin \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
+            architecture=arm target-os=iphone \
+            macosx-version=iphone-${IOS_SDK_VERSION} define=_LITTLE_ENDIAN \
             link=static threading=multi install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging iPhone. Check ${IOSOUTPUTDIR}/iphone-build.log"; exit 1; fi
     done
@@ -778,9 +779,9 @@ buildBoost_iOS()
         ./b2 $THREADS --build-dir=iphonesim-build --stagedir=iphonesim-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/fat-x86" \
-            variant=$VARIANT \
-            toolset=darwin-${IOS_SDK_VERSION}~iphonesim cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++" architecture=x86 \
-            target-os=iphone macosx-version=iphonesim-${IOS_SDK_VERSION} \
+            variant=$VARIANT toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
+            architecture=x86 target-os=iphone macosx-version=iphonesim-${IOS_SDK_VERSION} \
             link=static threading=multi install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging iPhoneSimulator. Check ${IOSOUTPUTDIR}/iphone-build.log"; exit 1; fi
     done
@@ -800,9 +801,9 @@ buildBoost_tvOS()
         ./b2 $THREADS --build-dir=appletv-build --stagedir=appletv-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$TVOSOUTPUTDIR/lib/$VARIANT/fat-arm" \
-            variant=$VARIANT \
-            toolset=darwin-${TVOS_SDK_VERSION}~appletv \
-            cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++" architecture=arm target-os=iphone define=_LITTLE_ENDIAN \
+            variant=$VARIANT toolset=darwin-${TVOS_SDK_VERSION}~appletv \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
+            architecture=arm target-os=iphone define=_LITTLE_ENDIAN \
             link=static threading=multi install >> "${TVOSOUTPUTDIR}/tvos-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging AppleTV. Check ${TVOSOUTPUTDIR}/tvos-build.log"; exit 1; fi
     done
@@ -816,7 +817,7 @@ buildBoost_tvOS()
             --libdir="$TVOSOUTPUTDIR/lib/$VARIANT/fat-x86" \
             variant=$VARIANT \
             toolset=darwin-${TVOS_SDK_VERSION}~appletvsim architecture=x86 \
-            cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++" target-os=iphone \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" target-os=iphone \
             link=static threading=multi install >> "${TVOSOUTPUTDIR}/tvos-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging AppleTVSimulator. Check ${TVOSOUTPUTDIR}/tvos-build.log"; exit 1; fi
     done
@@ -837,7 +838,7 @@ buildBoost_OSX()
             --prefix="$OUTPUT_DIR" \
             --libdir="$OSXOUTPUTDIR/lib/$VARIANT/x86_64" \
             variant=$VARIANT \
-            cxxflags="${CXX_FLAGS} -std=c++11 -stdlib=libc++ ${OSX_ARCH_FLAGS}" \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ ${OSX_ARCH_FLAGS}" \
             linkflags="-stdlib=libc++" link=static threading=multi \
             macosx-version=${OSX_SDK_VERSION} install >> "${OSXOUTPUTDIR}/osx-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging OSX. Check ${OSXOUTPUTDIR}/osx-build.log"; exit 1; fi
@@ -859,7 +860,7 @@ buildBoost_Linux()
             --prefix="$OUTPUT_DIR" \
             --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86_64" \
             variant=$VARIANT address-model=64 \
-            cxxflags="${CXX_FLAGS} -std=c++11" \
+            cxxflags="${CXX_FLAGS} ${CPPSTD}" \
             link=static threading=multi \
             install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log"; exit 1; fi
@@ -871,7 +872,7 @@ buildBoost_Linux()
             --prefix="$OUTPUT_DIR" \
             --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86" \
             variant=$VARIANT address-model=32 \
-            cxxflags="${CXX_FLAGS} -std=c++11" \
+            cxxflags="${CXX_FLAGS} ${CPPSTD}" \
             link=static threading=multi \
             install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log"; exit 1; fi
@@ -1308,6 +1309,8 @@ fi
 # -DBOOST_SP_USE_SPINLOCK
 # -stdlib=libc++
 
+CPPSTD="-std=c++1z"
+
 # Must set these after parseArgs to fill in overriden values
 # Todo: -g -DNDEBUG are for debug builds only...
 # Boost.test defines are needed to build correct instrumentable boost_unit_test_framework static lib
@@ -1342,6 +1345,7 @@ OSXFRAMEWORKDIR="$OSXOUTPUTDIR/framework"
 
 format="%-20s %s\n"
 format2="%-20s %s (%u)\n"
+printf "$format" "C++:" "$CPPSTD"
 printf "$format" "BUILD_ANDROID:" $( [[ -n $BUILD_ANDROID ]] && echo "YES" || echo "NO")
 printf "$format" "BUILD_IOS:" $( [[ -n $BUILD_IOS ]] && echo "YES" || echo "NO")
 printf "$format" "BUILD_TVOS:" $( [[ -n $BUILD_TVOS ]] && echo "YES" || echo "NO")
