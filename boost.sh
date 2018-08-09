@@ -421,7 +421,7 @@ downloadBoost()
     mkdir -p "$(dirname $BOOST_TARBALL)"
 
     if [ ! -s $BOOST_TARBALL ]; then
-        URL=http://sourceforge.net/projects/boost/files/boost/${BOOST_VERSION}/boost_${BOOST_VERSION2}.tar.bz2/download
+        URL=https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION2}.tar.bz2
         echo "Downloading boost ${BOOST_VERSION} from $URL"
         curl -L -o "$BOOST_TARBALL" $URL
         doneSection
