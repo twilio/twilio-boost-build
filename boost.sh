@@ -473,14 +473,19 @@ generateIosUserConfig()
 {
     cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
 using darwin : ${IOS_SDK_VERSION}~iphone
-: $COMPILER -arch armv7 -arch arm64 $EXTRA_IOS_FLAGS
+: $COMPILER -arch armv7 $EXTRA_IOS_FLAGS
 : <striper> <root>$XCODE_ROOT/Platforms/iPhoneOS.platform/Developer
-: <architecture>arm <target-os>iphone
+: <architecture>arm <target-os>iphone <address-model>32
+;
+using darwin : ${IOS_SDK_VERSION}~iphone
+: $COMPILER -arch arm64 $EXTRA_IOS_FLAGS
+: <striper> <root>$XCODE_ROOT/Platforms/iPhoneOS.platform/Developer
+: <architecture>arm <target-os>iphone <address-model>64
 ;
 using darwin : ${IOS_SDK_VERSION}~iphonesim
 : $COMPILER -arch i386 -arch x86_64 $EXTRA_IOS_FLAGS
 : <striper> <root>$XCODE_ROOT/Platforms/iPhoneSimulator.platform/Developer
-: <architecture>x86 <target-os>iphone
+: <architecture>x86 <target-os>iphone <address-model>32_64
 ;
 EOF
 }
@@ -748,13 +753,15 @@ buildBoost_Android()
 
     echo Building Boost for Android armv7
 
+# MUST be using toolset=clang too??
+
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/armeabi-v7a" toolset=clang-5.0~arm \
-            architecture=arm target-os=android \
-            address-model=32 variant=$VARIANT cxxflags="${CPPSTD}" \
-            link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
+            abi=aapcs architecture=arm address-model=32 binary-format=elf threading=multi \
+            target-os=android variant=$VARIANT cxxflags="${CPPSTD}" \
+            link=static install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error installing Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
     done
 
@@ -766,9 +773,9 @@ buildBoost_Android()
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/arm64-v8a" toolset=clang-5.0~arm64 \
-            architecture=arm target-os=android \
-            address-model=64 variant=$VARIANT cxxflags="${CPPSTD}" \
-            link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
+            abi=aapcs architecture=arm address-model=64 binary-format=elf threading=multi \
+            target-os=android variant=$VARIANT cxxflags="${CPPSTD}" \
+            link=static install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error installing Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
     done
 
@@ -787,12 +794,24 @@ buildBoost_iOS()
     for VARIANT in debug release; do
         ./b2 $THREADS --build-dir=iphone-build --stagedir=iphone-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$IOSOUTPUTDIR/lib/$VARIANT/fat-arm" \
-            variant=$VARIANT toolset=darwin \
+            --libdir="$IOSOUTPUTDIR/lib/$VARIANT/armeabi-v7a" \
+            abi=aapcs address-model=32 architecture=arm binary-format=mach-o toolset=darwin threading=multi \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
-            architecture=arm target-os=iphone \
+            variant=$VARIANT target-os=iphone \
             macosx-version=iphone-${IOS_SDK_VERSION} define=_LITTLE_ENDIAN \
-            link=static threading=multi install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
+            link=static install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
+        if [ $? != 0 ]; then echo "Error staging iPhone. Check ${IOSOUTPUTDIR}/iphone-build.log"; exit 1; fi
+    done
+
+    for VARIANT in debug release; do
+        ./b2 $THREADS --build-dir=iphone-build --stagedir=iphone-build/stage \
+            --prefix="$OUTPUT_DIR" \
+            --libdir="$IOSOUTPUTDIR/lib/$VARIANT/arm64-v8a" \
+            abi=aapcs address-model=64 architecture=arm binary-format=mach-o toolset=darwin threading=multi \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
+            variant=$VARIANT target-os=iphone \
+            macosx-version=iphone-${IOS_SDK_VERSION} define=_LITTLE_ENDIAN \
+            link=static install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging iPhone. Check ${IOSOUTPUTDIR}/iphone-build.log"; exit 1; fi
     done
 
@@ -804,10 +823,11 @@ buildBoost_iOS()
         ./b2 $THREADS --build-dir=iphonesim-build --stagedir=iphonesim-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/fat-x86" \
+            abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o threading=multi \
             variant=$VARIANT toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
             architecture=x86 target-os=iphone macosx-version=iphonesim-${IOS_SDK_VERSION} \
-            link=static threading=multi install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
+            link=static install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging iPhoneSimulator. Check ${IOSOUTPUTDIR}/iphone-build.log"; exit 1; fi
     done
 
@@ -826,7 +846,7 @@ buildBoost_tvOS()
         ./b2 $THREADS --build-dir=appletv-build --stagedir=appletv-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$TVOSOUTPUTDIR/lib/$VARIANT/fat-arm" \
-            variant=$VARIANT toolset=darwin-${TVOS_SDK_VERSION}~appletv \
+            address-model=32_64 variant=$VARIANT toolset=darwin-${TVOS_SDK_VERSION}~appletv \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
             architecture=arm target-os=iphone define=_LITTLE_ENDIAN \
             link=static threading=multi install >> "${TVOSOUTPUTDIR}/tvos-build.log" 2>&1
@@ -840,10 +860,11 @@ buildBoost_tvOS()
         ./b2 $THREADS --build-dir=appletv-build --stagedir=appletvsim-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$TVOSOUTPUTDIR/lib/$VARIANT/fat-x86" \
+            abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o threading=multi \
             variant=$VARIANT \
-            toolset=darwin-${TVOS_SDK_VERSION}~appletvsim architecture=x86 \
+            toolset=darwin-${TVOS_SDK_VERSION}~appletvsim \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" target-os=iphone \
-            link=static threading=multi install >> "${TVOSOUTPUTDIR}/tvos-build.log" 2>&1
+            link=static install >> "${TVOSOUTPUTDIR}/tvos-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging AppleTVSimulator. Check ${TVOSOUTPUTDIR}/tvos-build.log"; exit 1; fi
     done
 
@@ -862,7 +883,7 @@ buildBoost_OSX()
         ./b2 $THREADS --build-dir=osx-build --stagedir=osx-build/stage toolset=clang \
             --prefix="$OUTPUT_DIR" \
             --libdir="$OSXOUTPUTDIR/lib/$VARIANT/x86_64" \
-            variant=$VARIANT \
+            address-model=64 variant=$VARIANT \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ ${OSX_ARCH_FLAGS}" \
             linkflags="-stdlib=libc++" link=static threading=multi \
             macosx-version=${OSX_SDK_VERSION} install >> "${OSXOUTPUTDIR}/osx-build.log" 2>&1
@@ -884,7 +905,7 @@ buildBoost_Linux()
         ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
             --prefix="$OUTPUT_DIR" \
             --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86_64" \
-            variant=$VARIANT address-model=64 \
+            address-model=64 variant=$VARIANT \
             cxxflags="${CXX_FLAGS} ${CPPSTD}" \
             link=static threading=multi \
             install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
@@ -896,7 +917,7 @@ buildBoost_Linux()
         ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=clang \
             --prefix="$OUTPUT_DIR" \
             --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86" \
-            variant=$VARIANT address-model=32 \
+            address-model=32 variant=$VARIANT \
             cxxflags="${CXX_FLAGS} ${CPPSTD}" \
             link=static threading=multi \
             install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
