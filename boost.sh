@@ -1046,6 +1046,9 @@ unpackArchive()
 
 scrunchAllLibsTogetherInOneLibPerPlatform()
 {
+    echo "Framework builds are not supported - need to fix all the paths"
+    exit 1
+
     cd "$BOOST_SRC"
 
     if [[ -n $BUILD_IOS ]]; then
