@@ -1166,7 +1166,7 @@ scrunchAllLibsTogetherInOneLibPerPlatform()
 
         echo "Archiving $NAME"
 
-        # The obj/$NAME/*.o below should all be quotet, but I couldn't figure out how to do that elegantly.
+        # The obj/$NAME/*.o below should all be quoted, but I couldn't figure out how to do that elegantly.
         # Boost lib names probably won't contain non-word characters any time soon, though. ;) - Jan
 
         if [[ -n $BUILD_IOS ]]; then
