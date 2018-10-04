@@ -1016,6 +1016,34 @@ deployToNexus()
     fi
 }
 
+deployToBintray()
+{
+    if [[ -z "$REPO_ID" ]]; then
+        abort "Specify REPO_ID to deploy"
+    fi
+
+    if [[ -z "$BINTRAY_USERNAME" || -z "$BINTRAY_PASSWORD" ]]; then
+        abort "Specify both BINTRAY_USERNAME and BINTRAY_PASSWORD to deploy to Bintray"
+    fi
+
+    BUILDDIR="$CURRENT_DIR/target/distributions"
+
+    # Generate settings.xml with bintray password
+    echo "<?xml version='1.0' encoding='UTF-8'?>" > settings.xml
+    echo "<settings xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'" >> settings.xml
+    echo "          xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>" >> settings.xml
+    echo "    <servers>" >> settings.xml
+    echo "        <server>" >> settings.xml
+    echo "            <id>$REPO_ID</id>" >> settings.xml
+    echo "            <username>${BINTRAY_USERNAME}</username>" >> settings.xml
+    echo "            <password>${BINTRAY_PASSWORD}</password>" >> settings.xml
+    echo "        </server>" >> settings.xml
+    echo "    </servers>" >> settings.xml
+    echo "</settings>" >> settings.xml
+
+    deployToNexus
+}
+
 #===============================================================================
 
 unpackArchive()
@@ -1440,6 +1468,7 @@ if [[ -n "$BUILD_HEADERS" ]]; then
 fi
 packageLibs
 
-deployToNexus
+# deployToNexus
+deployToBintray
 
 echo "Completed successfully"
