@@ -426,7 +426,7 @@ unpackAsynchronous()
 
     echo Cloning Async into "$ASYNC_DIR"...
 
-    git clone git@github.com:henry-ch/asynchronous.git "$ASYNC_DIR"
+    git clone https://github.com/henry-ch/asynchronous.git "$ASYNC_DIR"
     (cd "$ASYNC_DIR"; git checkout $ASYNC_COMMIT)
 
     doneSection
