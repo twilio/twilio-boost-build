@@ -702,6 +702,7 @@ buildBoost_Android()
 {
     cd "$BOOST_SRC"
     mkdir -p $ANDROIDOUTPUTDIR
+    echo > ${ANDROIDOUTPUTDIR}/android-build.log
 
     if [[ -z "$ANDROID_NDK_ROOT" ]]; then
         echo "Must specify ANDROID_NDK_ROOT"
@@ -792,6 +793,7 @@ buildBoost_iOS()
 {
     cd "$BOOST_SRC"
     mkdir -p $IOSOUTPUTDIR
+    echo > ${IOSOUTPUTDIR}/iphone-build.log
 
     for VARIANT in debug release; do
         echo Building $VARIANT 32-bit Boost for iPhone
@@ -849,6 +851,7 @@ buildBoost_tvOS()
 {
     cd "$BOOST_SRC"
     mkdir -p $TVOSOUTPUTDIR
+    echo > ${TVOSOUTPUTDIR}/tvos-build.log
 
     for VARIANT in debug release; do
         echo Building $VARIANT fat Boost for AppleTV
@@ -888,6 +891,7 @@ buildBoost_OSX()
 {
     cd "$BOOST_SRC"
     mkdir -p $OSXOUTPUTDIR
+    echo > ${OSXOUTPUTDIR}/osx-build.log
 
     for VARIANT in debug release; do
         echo Building $VARIANT 64-bit Boost for OSX
@@ -911,6 +915,7 @@ buildBoost_Linux()
 {
     cd "$BOOST_SRC"
     mkdir -p $LINUXOUTPUTDIR
+    echo > ${LINUXOUTPUTDIR}/linux-build.log
 
     for VARIANT in debug release; do
         echo Building $VARIANT 64-bit Boost for Linux
