@@ -621,8 +621,7 @@ generateLinuxUserConfig()
 {
     cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
 using gcc : : g++-7 $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
-:
-<architecture>x86 <target-os>linux
+: <architecture>x86 <target-os>linux
 ;
 EOF
 }
@@ -909,7 +908,7 @@ buildBoost_Linux()
 
     for VARIANT in debug release; do
         echo Building $VARIANT 32-bit Boost for Linux
-        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=clang \
+        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
             --prefix="$OUTPUT_DIR" \
             --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86" \
             address-model=32 variant=$VARIANT \
