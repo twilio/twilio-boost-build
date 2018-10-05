@@ -730,6 +730,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86" toolset=clang-5.0~x86 \
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
+            optimization=speed \
             address-model=32 variant=$VARIANT cxxflags="${CPPSTD}" \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
@@ -744,6 +745,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86_64" toolset=clang-5.0~x86_64 \
             architecture=x86 target-os=android define=_LITTLE_ENDIAN \
+            optimization=speed \
             address-model=64 variant=$VARIANT cxxflags="${CPPSTD}" \
             link=static threading=multi install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
@@ -760,6 +762,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/armeabi-v7a" toolset=clang-5.0~arm \
             abi=aapcs architecture=arm address-model=32 binary-format=elf threading=multi \
+            optimization=space \
             target-os=android variant=$VARIANT cxxflags="${CPPSTD}" \
             link=static install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error installing Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
@@ -774,6 +777,7 @@ buildBoost_Android()
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/arm64-v8a" toolset=clang-5.0~arm64 \
             abi=aapcs architecture=arm address-model=64 binary-format=elf threading=multi \
+            optimization=space \
             target-os=android variant=$VARIANT cxxflags="${CPPSTD}" \
             link=static install >> "${ANDROIDOUTPUTDIR}/android-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error installing Android. Check ${ANDROIDOUTPUTDIR}/android-build.log"; exit 1; fi
@@ -797,6 +801,7 @@ buildBoost_iOS()
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/armeabi-v7a" \
             abi=aapcs address-model=32 architecture=arm binary-format=mach-o toolset=darwin threading=multi \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
+            optimization=space \
             variant=$VARIANT target-os=iphone \
             macosx-version=iphone-${IOS_SDK_VERSION} define=_LITTLE_ENDIAN \
             link=static install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
@@ -809,6 +814,7 @@ buildBoost_iOS()
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/arm64-v8a" \
             abi=aapcs address-model=64 architecture=arm binary-format=mach-o toolset=darwin threading=multi \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
+            optimization=space \
             variant=$VARIANT target-os=iphone \
             macosx-version=iphone-${IOS_SDK_VERSION} define=_LITTLE_ENDIAN \
             link=static install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
@@ -825,6 +831,7 @@ buildBoost_iOS()
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/fat-x86" \
             abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o threading=multi \
             variant=$VARIANT toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
+            optimization=speed \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
             architecture=x86 target-os=iphone macosx-version=iphonesim-${IOS_SDK_VERSION} \
             link=static install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
@@ -847,6 +854,7 @@ buildBoost_tvOS()
             --prefix="$OUTPUT_DIR" \
             --libdir="$TVOSOUTPUTDIR/lib/$VARIANT/fat-arm" \
             address-model=32_64 variant=$VARIANT toolset=darwin-${TVOS_SDK_VERSION}~appletv \
+            optimization=space \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
             architecture=arm target-os=iphone define=_LITTLE_ENDIAN \
             link=static threading=multi install >> "${TVOSOUTPUTDIR}/tvos-build.log" 2>&1
@@ -861,6 +869,7 @@ buildBoost_tvOS()
             --prefix="$OUTPUT_DIR" \
             --libdir="$TVOSOUTPUTDIR/lib/$VARIANT/fat-x86" \
             abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o threading=multi \
+            optimization=speed \
             variant=$VARIANT \
             toolset=darwin-${TVOS_SDK_VERSION}~appletvsim \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" target-os=iphone \
@@ -884,6 +893,7 @@ buildBoost_OSX()
             --prefix="$OUTPUT_DIR" \
             --libdir="$OSXOUTPUTDIR/lib/$VARIANT/x86_64" \
             address-model=64 variant=$VARIANT \
+            optimization=speed \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ ${OSX_ARCH_FLAGS}" \
             linkflags="-stdlib=libc++" link=static threading=multi \
             macosx-version=${OSX_SDK_VERSION} install >> "${OSXOUTPUTDIR}/osx-build.log" 2>&1
@@ -906,6 +916,7 @@ buildBoost_Linux()
             --prefix="$OUTPUT_DIR" \
             --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86_64" \
             address-model=64 variant=$VARIANT \
+            optimization=speed \
             cxxflags="${CXX_FLAGS} ${CPPSTD}" \
             link=static threading=multi \
             install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
@@ -918,6 +929,7 @@ buildBoost_Linux()
             --prefix="$OUTPUT_DIR" \
             --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86" \
             address-model=32 variant=$VARIANT \
+            optimization=speed \
             cxxflags="${CXX_FLAGS} ${CPPSTD}" \
             link=static threading=multi \
             install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
