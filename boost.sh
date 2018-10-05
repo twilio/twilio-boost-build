@@ -981,7 +981,7 @@ deployFile()
         -Dversion=$VERSION \
         -DgeneratePom=true \
         -Dpackaging=tar.bz2 \
-        -Dfile=$FILE
+        -Dfile=$FILE || exit 1
 }
 
 deployPlat()
