@@ -754,8 +754,6 @@ buildBoost_Android()
 
     doneSection
 
-# MUST be using toolset=clang too??
-
     for VARIANT in debug release; do
         echo Building $VARIANT armv7 Boost for Android
 
@@ -795,18 +793,21 @@ buildBoost_iOS()
     mkdir -p $IOSOUTPUTDIR
     echo > ${IOSOUTPUTDIR}/iphone-build.log
 
+    IOS_SHARED_FLAGS="target-os=iphone threading=multi \
+        abi=aapcs binary-format=mach-o \
+        link=static define=_LITTLE_ENDIAN"
+
     for VARIANT in debug release; do
         echo Building $VARIANT 32-bit Boost for iPhone
 
         ./b2 $THREADS --build-dir=iphone-build --stagedir=iphone-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/armeabi-v7a" \
-            abi=aapcs address-model=32 architecture=arm binary-format=mach-o toolset=darwin threading=multi \
+            toolset=darwin-${IOS_SDK_VERSION}~iphone \
+            variant=$VARIANT address-model=32 architecture=arm optimization=space \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
-            optimization=space \
-            variant=$VARIANT target-os=iphone \
-            macosx-version=iphone-${IOS_SDK_VERSION} define=_LITTLE_ENDIAN \
-            link=static install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
+            macosx-version=iphone-${IOS_SDK_VERSION} \
+            $IOS_SHARED_FLAGS install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging iPhone. Check ${IOSOUTPUTDIR}/iphone-build.log"; exit 1; fi
     done
 
@@ -816,12 +817,11 @@ buildBoost_iOS()
         ./b2 $THREADS --build-dir=iphone-build --stagedir=iphone-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/arm64-v8a" \
-            abi=aapcs address-model=64 architecture=arm binary-format=mach-o toolset=darwin threading=multi \
+            toolset=darwin-${IOS_SDK_VERSION}~iphone \
+            variant=$VARIANT address-model=64 architecture=arm optimization=space \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
-            optimization=space \
-            variant=$VARIANT target-os=iphone \
-            macosx-version=iphone-${IOS_SDK_VERSION} define=_LITTLE_ENDIAN \
-            link=static install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
+            macosx-version=iphone-${IOS_SDK_VERSION} \
+            $IOS_SHARED_FLAGS install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging iPhone. Check ${IOSOUTPUTDIR}/iphone-build.log"; exit 1; fi
     done
 
@@ -833,12 +833,12 @@ buildBoost_iOS()
         ./b2 $THREADS --build-dir=iphonesim-build --stagedir=iphonesim-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/fat-x86" \
-            abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o threading=multi \
-            variant=$VARIANT toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
-            optimization=speed \
+            toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
+            variant=$VARIANT abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o \
+            target-os=iphone architecture=x86 threading=multi optimization=speed link=static \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
-            architecture=x86 target-os=iphone macosx-version=iphonesim-${IOS_SDK_VERSION} \
-            link=static install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
+            macosx-version=iphonesim-${IOS_SDK_VERSION} \
+            install >> "${IOSOUTPUTDIR}/iphone-build.log" 2>&1
         if [ $? != 0 ]; then echo "Error staging iPhoneSimulator. Check ${IOSOUTPUTDIR}/iphone-build.log"; exit 1; fi
     done
 
