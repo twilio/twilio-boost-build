@@ -1070,21 +1070,22 @@ deployToBintray()
     fi
 
     BUILDDIR="$CURRENT_DIR/target/distributions"
+    SETTINGS_FILE="$CURRENT_DIR/settings.xml"
 
     # Generate settings.xml with bintray password
-    echo "<?xml version='1.0' encoding='UTF-8'?>" > settings.xml
-    echo "<settings xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'" >> settings.xml
-    echo "          xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>" >> settings.xml
-    echo "    <servers>" >> settings.xml
-    echo "        <server>" >> settings.xml
-    echo "            <id>$REPO_ID</id>" >> settings.xml
-    echo "            <username>${BINTRAY_USERNAME}</username>" >> settings.xml
-    echo "            <password>${BINTRAY_PASSWORD}</password>" >> settings.xml
-    echo "        </server>" >> settings.xml
-    echo "    </servers>" >> settings.xml
-    echo "</settings>" >> settings.xml
+    echo "<?xml version='1.0' encoding='UTF-8'?>" > $SETTINGS_FILE
+    echo "<settings xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'" >> $SETTINGS_FILE
+    echo "          xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>" >> $SETTINGS_FILE
+    echo "    <servers>" >> $SETTINGS_FILE
+    echo "        <server>" >> $SETTINGS_FILE
+    echo "            <id>$REPO_ID</id>" >> $SETTINGS_FILE
+    echo "            <username>${BINTRAY_USERNAME}</username>" >> $SETTINGS_FILE
+    echo "            <password>${BINTRAY_PASSWORD}</password>" >> $SETTINGS_FILE
+    echo "        </server>" >> $SETTINGS_FILE
+    echo "    </servers>" >> $SETTINGS_FILE
+    echo "</settings>" >> $SETTINGS_FILE
 
-    SETTINGS_FILE="-s $CURRENT_DIR/settings.xml"
+    SETTINGS_FILE="-s $SETTINGS_FILE"
 
     deployToNexus
 }
