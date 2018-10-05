@@ -28,6 +28,7 @@
 #
 #===============================================================================
 
+ALL_BOOST_LIBS="atomic chrono container context coroutine date_time exception filesystem graph graph_parallel iostreams locale log math mpi program_options python random regex serialization signals system test thread timer type_erasure wave"
 BOOST_LIBS="atomic container date_time exception iostreams program_options random regex serialization system test"
 
 BUILD_ANDROID=
@@ -135,35 +136,8 @@ OPTIONS:
         Defaults to:
             $BOOST_LIBS
         Boost libraries requiring separate building are:
-            - atomic
-            - chrono
-            - container
-            - context
-            - coroutine
-            - coroutine2
-            - date_time
-            - exception
-            - filesystem
-            - graph
-            - graph_parallel
-            - iostreams
-            - locale
-            - log
-            - math
-            - metaparse
-            - mpi
-            - program_options
-            - python
-            - random
-            - regex
-            - serialization
-            - signals
-            - system
-            - test
-            - thread
-            - timer
-            - type_erasure
-            - wave
+            - ${ALL_BOOST_LIBS// /
+            - }
 
     --ios-sdk [num]
         Specify the iOS SDK version to build with. Defaults to $IOS_SDK_VERSION.
@@ -259,6 +233,9 @@ parseArgs()
                     shift
                 else
                     missingParameter $1
+                fi
+                if [ "$BOOST_LIBS" == "all" ]; then
+                    BOOST_LIBS="$ALL_BOOST_LIBS"
                 fi
                 ;;
 
