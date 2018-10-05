@@ -723,9 +723,9 @@ buildBoost_Android()
     #   fi
     # fi
 
-    echo Building Boost for Android Emulator x86
-
     for VARIANT in debug release; do
+        echo Building $VARIANT x86 Boost for Android Emulator
+
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86" toolset=clang-5.0~x86 \
@@ -738,9 +738,9 @@ buildBoost_Android()
 
     doneSection
 
-    echo Building Boost for Android Emulator x86_64
-
     for VARIANT in debug release; do
+        echo Building $VARIANT x86_64 Boost for Android Emulator
+
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/x86_64" toolset=clang-5.0~x86_64 \
@@ -753,11 +753,11 @@ buildBoost_Android()
 
     doneSection
 
-    echo Building Boost for Android armv7
-
 # MUST be using toolset=clang too??
 
     for VARIANT in debug release; do
+        echo Building $VARIANT armv7 Boost for Android
+
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/armeabi-v7a" toolset=clang-5.0~arm \
@@ -770,9 +770,9 @@ buildBoost_Android()
 
     doneSection
 
-    echo Building Boost for Android armv8-64
-
     for VARIANT in debug release; do
+        echo Building $VARIANT arm64 Boost for Android
+
         ./b2 $THREADS --build-dir=android-build --stagedir=android-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$ANDROIDOUTPUTDIR/lib/$VARIANT/arm64-v8a" toolset=clang-5.0~arm64 \
@@ -793,9 +793,9 @@ buildBoost_iOS()
     cd "$BOOST_SRC"
     mkdir -p $IOSOUTPUTDIR
 
-    echo Building Boost for iPhone
-
     for VARIANT in debug release; do
+        echo Building $VARIANT 32-bit Boost for iPhone
+
         ./b2 $THREADS --build-dir=iphone-build --stagedir=iphone-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/armeabi-v7a" \
@@ -809,6 +809,8 @@ buildBoost_iOS()
     done
 
     for VARIANT in debug release; do
+        echo Building $VARIANT 64-bit Boost for iPhone
+
         ./b2 $THREADS --build-dir=iphone-build --stagedir=iphone-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/arm64-v8a" \
@@ -823,9 +825,9 @@ buildBoost_iOS()
 
     doneSection
 
-    echo Building Boost for iPhoneSimulator
-
     for VARIANT in debug release; do
+        echo Building $VARIANT fat Boost for iPhoneSimulator
+
         ./b2 $THREADS --build-dir=iphonesim-build --stagedir=iphonesim-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$IOSOUTPUTDIR/lib/$VARIANT/fat-x86" \
@@ -849,7 +851,7 @@ buildBoost_tvOS()
     mkdir -p $TVOSOUTPUTDIR
 
     for VARIANT in debug release; do
-        echo Building $VARIANT Boost for AppleTV
+        echo Building $VARIANT fat Boost for AppleTV
         ./b2 $THREADS --build-dir=appletv-build --stagedir=appletv-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$TVOSOUTPUTDIR/lib/$VARIANT/fat-arm" \
@@ -864,7 +866,7 @@ buildBoost_tvOS()
     doneSection
 
     for VARIANT in debug release; do
-        echo Building $VARIANT Boost for AppleTVSimulator
+        echo Building $VARIANT fat Boost for AppleTVSimulator
         ./b2 $THREADS --build-dir=appletv-build --stagedir=appletvsim-build/stage \
             --prefix="$OUTPUT_DIR" \
             --libdir="$TVOSOUTPUTDIR/lib/$VARIANT/fat-x86" \
@@ -888,7 +890,7 @@ buildBoost_OSX()
     mkdir -p $OSXOUTPUTDIR
 
     for VARIANT in debug release; do
-        echo Building $VARIANT Boost for OSX
+        echo Building $VARIANT 64-bit Boost for OSX
         ./b2 $THREADS --build-dir=osx-build --stagedir=osx-build/stage toolset=clang \
             --prefix="$OUTPUT_DIR" \
             --libdir="$OSXOUTPUTDIR/lib/$VARIANT/x86_64" \
