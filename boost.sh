@@ -372,7 +372,7 @@ missingParameter()
 
 unknownParameter()
 {
-    if [[ -n $2 &&  $2 != "" ]]; then
+    if [[ -n $2 && $2 != "" ]]; then
         echo Unknown argument \"$2\" for parameter $1.
     else
         echo Unknown argument $1
