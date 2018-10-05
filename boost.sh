@@ -397,18 +397,18 @@ cleanup()
     echo Cleaning everything
 
     if [[ -n $BUILD_IOS ]]; then
-        rm -r "$BOOST_SRC/iphone-build"
-        rm -r "$BOOST_SRC/iphonesim-build"
-        rm -r "$IOSOUTPUTDIR"
+        rm -rf "$BOOST_SRC/iphone-build"
+        rm -rf "$BOOST_SRC/iphonesim-build"
+        rm -rf "$IOSOUTPUTDIR"
     fi
     if [[ -n $BUILD_TVOS ]]; then
-        rm -r "$BOOST_SRC/appletv-build"
-        rm -r "$BOOST_SRC/appletvsim-build"
-        rm -r "$TVOSOUTPUTDIR"
+        rm -rf "$BOOST_SRC/appletv-build"
+        rm -rf "$BOOST_SRC/appletvsim-build"
+        rm -rf "$TVOSOUTPUTDIR"
     fi
     if [[ -n $BUILD_OSX ]]; then
-        rm -r "$BOOST_SRC/osx-build"
-        rm -r "$OSXOUTPUTDIR"
+        rm -rf "$BOOST_SRC/osx-build"
+        rm -rf "$OSXOUTPUTDIR"
     fi
 
     doneSection
