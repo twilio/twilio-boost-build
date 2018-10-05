@@ -29,7 +29,7 @@
 #===============================================================================
 
 ALL_BOOST_LIBS="atomic chrono container context coroutine date_time exception filesystem graph graph_parallel iostreams locale log math mpi program_options python random regex serialization signals system test thread timer type_erasure wave"
-BOOST_LIBS="atomic container date_time exception iostreams program_options random regex serialization system test"
+BOOST_LIBS="atomic container context coroutine date_time exception iostreams program_options random regex serialization system test thread"
 
 BUILD_ANDROID=
 BUILD_IOS=
