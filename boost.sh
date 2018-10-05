@@ -464,7 +464,7 @@ inventMissingHeaders()
     # to use them on ARM, too.
     echo Invent missing headers
 
-    cp "$XCODE_ROOT/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator${IOS_SDK_VERSION}.sdk/usr/include/"{crt_externs,bzlib}.h "$BOOST_SRC"
+    cp "$XCODE_ROOT/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator${IOS_SDK_VERSION}.sdk/usr/include/bzlib.h" "$BOOST_SRC"
 }
 
 #===============================================================================
