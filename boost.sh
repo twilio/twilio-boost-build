@@ -469,12 +469,9 @@ inventMissingHeaders()
 
 #===============================================================================
 
-updateBoost()
+generateIosUserConfig()
 {
-    echo Updating boost into $BOOST_SRC...
-
-    if [[ "$1" == "iOS" ]]; then
-        cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
+    cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
 using darwin : ${IOS_SDK_VERSION}~iphone
 : $COMPILER -arch armv7 -arch arm64 $EXTRA_IOS_FLAGS
 : <striper> <root>$XCODE_ROOT/Platforms/iPhoneOS.platform/Developer
@@ -486,10 +483,11 @@ using darwin : ${IOS_SDK_VERSION}~iphonesim
 : <architecture>x86 <target-os>iphone
 ;
 EOF
-    fi
+}
 
-    if [[ "$1" == "tvOS" ]]; then
-        cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
+generateTvosUserConfig()
+{
+    cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
 using darwin : ${TVOS_SDK_VERSION}~appletv
 : $COMPILER -arch arm64 $EXTRA_TVOS_FLAGS -I${XCODE_ROOT}/Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS${TVOS_SDK_VERSION}.sdk/usr/include
 : <striper> <root>$XCODE_ROOT/Platforms/AppleTVOS.platform/Developer
@@ -501,26 +499,28 @@ using darwin : ${TVOS_SDK_VERSION}~appletvsim
 : <architecture>x86 <target-os>iphone
 ;
 EOF
-    fi
+}
 
-    if [[ "$1" == "OSX" ]]; then
-        cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
+generateOsxUserConfig()
+{
+    cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
 using darwin : ${OSX_SDK_VERSION}
 : $COMPILER $OSX_ARCH_FLAGS $EXTRA_OSX_FLAGS
 : <striper> <root>$XCODE_ROOT/Platforms/MacOSX.platform/Developer
 : <architecture>x86 <target-os>darwin
 ;
 EOF
-    fi
+}
 
-    if [[ "$1" == "Android" ]]; then
-        HOSTOS="$(uname | awk '{ print $1}' | tr [:upper:] [:lower:])-" # darwin or linux
-        OSARCH="$(uname -m)"
+generateAndroidUserConfig()
+{
+    HOSTOS="$(uname | awk '{ print $1}' | tr [:upper:] [:lower:])-" # darwin or linux
+    OSARCH="$(uname -m)"
 
-        # Boost doesn't build with <compileflags>-Werror
-        # Reported to boost-users@lists.boost.org
+    # Boost doesn't build with <compileflags>-Werror
+    # Reported to boost-users@lists.boost.org
 
-        cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
+    cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
 using clang : 5.0~x86
 : $ANDROID_NDK_ROOT/toolchains/llvm/prebuilt/$HOSTOS$OSARCH/bin/clang++ $EXTRA_ANDROID_FLAGS
 :
@@ -633,15 +633,40 @@ using clang : 5.0~arm64
 <compileflags>-Wshadow
 ;
 EOF
-    fi
+}
 
-    if [[ "$1" == "Linux" ]]; then
-        cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
+generateLinuxUserConfig()
+{
+    cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
 using gcc : : g++-7 $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
 :
 <architecture>x86 <target-os>linux
 ;
 EOF
+}
+
+updateBoost()
+{
+    echo Updating boost into $BOOST_SRC...
+
+    if [[ "$1" == "iOS" ]]; then
+        generateIosUserConfig
+    fi
+
+    if [[ "$1" == "tvOS" ]]; then
+        generateTvosUserConfig
+    fi
+
+    if [[ "$1" == "OSX" ]]; then
+        generateOsxUserConfig
+    fi
+
+    if [[ "$1" == "Android" ]]; then
+        generateAndroidUserConfig
+    fi
+
+    if [[ "$1" == "Linux" ]]; then
+        generateLinuxUserConfig
     fi
 
     doneSection
