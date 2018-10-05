@@ -1014,7 +1014,8 @@ deployFile()
     CLASSIFIER=$3
     VERSION=$4
 
-    mvn deploy:deploy-file \
+    mvn deploy:deploy-file 
+        $SETTINGS_FILE \
         -Durl=$REPO_URL \
         -DrepositoryId=$REPO_ID \
         -DgroupId=org.boost \
@@ -1082,6 +1083,8 @@ deployToBintray()
     echo "        </server>" >> settings.xml
     echo "    </servers>" >> settings.xml
     echo "</settings>" >> settings.xml
+
+    SETTINGS_FILE="-s $CURRENT_DIR/settings.xml"
 
     deployToNexus
 }
