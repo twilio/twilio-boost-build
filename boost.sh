@@ -1072,17 +1072,28 @@ deployToBintray()
     SETTINGS_FILE="$CURRENT_DIR/settings.xml"
 
     # Generate settings.xml with bintray password
-    echo "<?xml version='1.0' encoding='UTF-8'?>" > $SETTINGS_FILE
-    echo "<settings xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'" >> $SETTINGS_FILE
-    echo "          xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>" >> $SETTINGS_FILE
-    echo "    <servers>" >> $SETTINGS_FILE
-    echo "        <server>" >> $SETTINGS_FILE
-    echo "            <id>$REPO_ID</id>" >> $SETTINGS_FILE
-    echo "            <username>${BINTRAY_USERNAME}</username>" >> $SETTINGS_FILE
-    echo "            <password>${BINTRAY_PASSWORD}</password>" >> $SETTINGS_FILE
-    echo "        </server>" >> $SETTINGS_FILE
-    echo "    </servers>" >> $SETTINGS_FILE
-    echo "</settings>" >> $SETTINGS_FILE
+    echo <<EOF > $SETTINGS_FILE
+<?xml version='1.0' encoding='UTF-8'?>
+<settings xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'
+          xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
+    <servers>
+        <server>
+            <id>$REPO_ID</id>
+            <username>${BINTRAY_USERNAME}</username>
+            <password>${BINTRAY_PASSWORD}</password>
+        </server>
+    </servers>
+
+    <distributionManagement>
+        <repository>
+            <id>$REPO_ID</id>
+            <name>twilio-releases</name>
+            <url>$REPO_URL</url>
+        </repository>
+    </distributionManagement>
+
+</settings>
+EOF
 
     SETTINGS_FILE="-s $SETTINGS_FILE"
 
