@@ -1086,15 +1086,6 @@ deployToBintray()
             <password>${BINTRAY_PASSWORD}</password>
         </server>
     </servers>
-
-    <distributionManagement>
-        <repository>
-            <id>$REPO_ID</id>
-            <name>twilio-releases</name>
-            <url>$REPO_URL</url>
-        </repository>
-    </distributionManagement>
-
 </settings>
 EOF
 
