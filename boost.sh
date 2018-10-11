@@ -417,6 +417,9 @@ unpackBoost()
     [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xfj "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
     echo "    ...unpacked as $BOOST_SRC"
 
+    echo Applying patches...
+    (cd $BOOST_SRC; patch -p2 < $CURRENT_DIR/patches/boost_1_68_0_provider_getrandom_android.patch)
+
     doneSection
 }
 

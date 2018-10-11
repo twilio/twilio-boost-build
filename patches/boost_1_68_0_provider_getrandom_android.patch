@@ -1,0 +1,49 @@
+commit 2c142e311adae28cf4c489a029f92200cd3e9015
+Author: Andrey Semashev <andrey.semashev@gmail.com>
+Date:   Thu Aug 16 00:12:32 2018 +0300
+
+    Disabled getrandom provider on Android prior to API version 28.
+    
+    Android supports getrandom and getentropy functions only since API version 28.
+    
+    As part of the fix converted Linux/Android platform detection from Boost.Predef
+    to direct checks of platform-specific macros. This is to work around
+    Boost.Predef problem described in [1] - depending on header inclusion order
+    Boost.Predef may indicate Linux or Android. When that problem is fixed we
+    may change back to Boost.Predef.
+    
+    Fixes https://github.com/boostorg/uuid/issues/76.
+    
+    [1]: https://github.com/boostorg/predef/issues/81#issuecomment-413329061
+
+diff --git a/include/boost/uuid/detail/random_provider_detect_platform.hpp b/include/boost/uuid/detail/random_provider_detect_platform.hpp
+index f24b06f..b3b2655 100644
+--- a/include/boost/uuid/detail/random_provider_detect_platform.hpp
++++ b/include/boost/uuid/detail/random_provider_detect_platform.hpp
+@@ -14,10 +14,15 @@
+ #include <boost/predef/library/c/cloudabi.h>
+ #include <boost/predef/library/c/gnu.h>
+ #include <boost/predef/os/bsd/open.h>
+-#include <boost/predef/os/linux.h>
+ #include <boost/predef/os/windows.h>
+-#if BOOST_OS_LINUX
++
++// Note: Don't use Boost.Predef to detect Linux and Android as it may give different results depending on header inclusion order.
++// https://github.com/boostorg/predef/issues/81#issuecomment-413329061
++#if (defined(__linux__) || defined(__linux) || defined(linux)) && (!defined(__ANDROID__) || __ANDROID_API__ >= 28)
+ #include <sys/syscall.h>
++#if defined(SYS_getrandom)
++#define BOOST_UUID_RANDOM_PROVIDER_HAS_GETRANDOM
++#endif // defined(SYS_getrandom)
+ #endif
+ 
+ //
+@@ -45,7 +50,7 @@
+ #  error Unable to find a suitable windows entropy provider
+ # endif
+ 
+-#elif BOOST_OS_LINUX && defined(SYS_getrandom) && !defined(BOOST_UUID_RANDOM_PROVIDER_FORCE_POSIX) && !defined(BOOST_UUID_RANDOM_PROVIDER_DISABLE_GETRANDOM)
++#elif defined(BOOST_UUID_RANDOM_PROVIDER_HAS_GETRANDOM) && !defined(BOOST_UUID_RANDOM_PROVIDER_FORCE_POSIX) && !defined(BOOST_UUID_RANDOM_PROVIDER_DISABLE_GETRANDOM)
+ # define BOOST_UUID_RANDOM_PROVIDER_GETRANDOM
+ # define BOOST_UUID_RANDOM_PROVIDER_NAME getrandom
+ 
