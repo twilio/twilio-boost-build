@@ -1075,7 +1075,7 @@ deployToBintray()
     SETTINGS_FILE="$CURRENT_DIR/settings.xml"
 
     # Generate settings.xml with bintray password
-    echo <<EOF > $SETTINGS_FILE
+    cat <<EOF > $SETTINGS_FILE
 <?xml version='1.0' encoding='UTF-8'?>
 <settings xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'
           xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
