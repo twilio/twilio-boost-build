@@ -77,6 +77,7 @@ THREADS="-j$(getconf _NPROCESSORS_ONLN)"
 CURRENT_DIR=`pwd`
 SRCDIR="$CURRENT_DIR/src"
 ASYNC_DIR="$SRCDIR/asynchronous"
+URI_DIR="$CURRENT_DIR/src/uri"
 
 IOS_ARM_DEV_CMD="xcrun --sdk iphoneos"
 IOS_SIM_DEV_CMD="xcrun --sdk iphonesimulator"
@@ -431,6 +432,17 @@ unpackAsynchronous()
 
     git clone https://github.com/henry-ch/asynchronous.git "$ASYNC_DIR"
     (cd "$ASYNC_DIR"; git checkout $ASYNC_COMMIT)
+
+    doneSection
+}
+
+unpackUri()
+{
+    [ -d "$URI_DIR" ] && return
+
+    echo Cloning URI into "$URI_DIR"...
+
+    git clone git@github.com:cpp-netlib/uri.git "$URI_DIR"
 
     doneSection
 }
@@ -1464,6 +1476,7 @@ fi
 downloadBoost
 unpackBoost
 unpackAsynchronous
+unpackUri
 inventMissingHeaders
 
 if [ -n "$UNPACK" ]; then
