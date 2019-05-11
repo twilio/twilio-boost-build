@@ -1424,7 +1424,6 @@ else
    EXTRA_LINUX_FLAGS="$EXTRA_FLAGS"
 fi
 
-
 BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
 BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
 OUTPUT_DIR="$CURRENT_DIR/target/outputs/boost/$BOOST_VERSION"
@@ -1464,6 +1463,7 @@ printf "$format" "BOOST_SRC:" "$BOOST_SRC"
 printf "$format" "ANDROID_NDK_ROOT:" "$ANDROID_NDK_ROOT"
 printf "$format" "ANDROIDBUILDDIR:" "$ANDROIDBUILDDIR"
 printf "$format" "LINUXBUILDDIR:" "$LINUXBUILDDIR"
+printf "$format" "EXTRA_LINUX_FLAGS:" "$EXTRA_LINUX_FLAGS"
 printf "$format" "IOSBUILDDIR:" "$IOSBUILDDIR"
 printf "$format" "OSXBUILDDIR:" "$OSXBUILDDIR"
 printf "$format" "IOSFRAMEWORKDIR:" "$IOSFRAMEWORKDIR"
