@@ -41,6 +41,7 @@ UNPACK=
 CLEAN=
 NO_CLEAN=
 NO_FRAMEWORK=
+USE_CXX11_ABI=
 
 BOOST_VERSION=1.67.0
 BOOST_VERSION2=1_67_0
@@ -91,7 +92,7 @@ OSX_DEV_CMD="xcrun --sdk macosx"
 usage()
 {
 cat << EOF
-usage: $0 [{-android,-ios,-tvos,-osx,-linux} ...] options
+usage: $0 [{-android,-ios,-tvos,-osx,-linux,-linux-cxx-11-abi} ...] options
 Build Boost for Android, iOS, iOS Simulator, tvOS, tvOS Simulator, OS X, and Linux
 The -ios, -tvos, and -osx options may be specified together.
 
@@ -118,6 +119,9 @@ OPTIONS:
 
     -linux
         Build for the Linux platform.
+
+    -linux-cxx-11-abi
+        Build for the Linux platform with gcc-4.8 ABI compatibility.
 
     -headers
         Package headers.
@@ -199,6 +203,11 @@ parseArgs()
 
             -linux)
                 BUILD_LINUX=1
+                ;;
+
+            -linux-cxx-11-abi)
+                BUILD_LINUX=1
+                USE_CXX11_ABI=1
                 ;;
 
             -headers)
@@ -1057,7 +1066,11 @@ deployToNexus()
         deployPlat "osx" "$BUILDDIR"
     fi
     if [[ -n "$BUILD_LINUX" ]]; then
-        deployPlat "linux" "$BUILDDIR"
+        if [[ -n "$USE_CXX11_ABI" ]]; then
+            deployPlat "linux-cxx-11-abi" "$BUILDDIR"
+        else
+            deployPlat "linux" "$BUILDDIR"
+        fi
     fi
 }
 
@@ -1404,7 +1417,13 @@ EXTRA_IOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mios-version-min=$MIN_IOS_VERSION
 EXTRA_TVOS_FLAGS="$EXTRA_FLAGS -fembed-bitcode -mtvos-version-min=$MIN_TVOS_VERSION"
 EXTRA_OSX_FLAGS="$EXTRA_FLAGS -mmacosx-version-min=$MIN_OSX_VERSION"
 EXTRA_ANDROID_FLAGS="$EXTRA_FLAGS"
-EXTRA_LINUX_FLAGS="$EXTRA_FLAGS"
+
+if [[ -n "$USE_CXX11_ABI" ]]; then
+   EXTRA_LINUX_FLAGS="$EXTRA_FLAGS -D_GLIBCXX_USE_CXX11_ABI=0"
+else
+   EXTRA_LINUX_FLAGS="$EXTRA_FLAGS"
+fi
+
 
 BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
 BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
@@ -1518,7 +1537,6 @@ if [[ -n "$BUILD_HEADERS" ]]; then
 fi
 packageLibs
 
-# deployToNexus
 deployToBintray
 
 echo "Completed successfully"
