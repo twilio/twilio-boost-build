@@ -92,7 +92,7 @@ OSX_DEV_CMD="xcrun --sdk macosx"
 usage()
 {
 cat << EOF
-usage: $0 [{-android,-ios,-tvos,-osx,-linux,-linux-cxx-11-abi} ...] options
+usage: $0 [{-android,-ios,-tvos,-osx,-linux,-linux-cxx11-abi-disabled} ...] options
 Build Boost for Android, iOS, iOS Simulator, tvOS, tvOS Simulator, OS X, and Linux
 The -ios, -tvos, and -osx options may be specified together.
 
@@ -120,8 +120,8 @@ OPTIONS:
     -linux
         Build for the Linux platform.
 
-    -linux-cxx-11-abi
-        Build for the Linux platform with gcc-4.8 ABI compatibility.
+    -linux-cxx11-abi-disabled
+        Build for the Linux platform without the modern C++11-conforming ABI introduced in GCC 5.
 
     -headers
         Package headers.
@@ -205,9 +205,9 @@ parseArgs()
                 BUILD_LINUX=1
                 ;;
 
-            -linux-cxx-11-abi)
+            -linux-cxx11-abi-disabled)
                 BUILD_LINUX=1
-                USE_CXX11_ABI=1
+                USE_CXX11_ABI=0
                 ;;
 
             -headers)
@@ -1066,8 +1066,8 @@ deployToNexus()
         deployPlat "osx" "$BUILDDIR"
     fi
     if [[ -n "$BUILD_LINUX" ]]; then
-        if [[ -n "$USE_CXX11_ABI" ]]; then
-            deployPlat "linux-cxx-11-abi" "$BUILDDIR"
+        if [[ "$USE_CXX11_ABI" = 0 ]]; then
+            deployPlat "linux-cxx11-abi-disabled" "$BUILDDIR"
         else
             deployPlat "linux" "$BUILDDIR"
         fi
@@ -1419,7 +1419,7 @@ EXTRA_OSX_FLAGS="$EXTRA_FLAGS -mmacosx-version-min=$MIN_OSX_VERSION"
 EXTRA_ANDROID_FLAGS="$EXTRA_FLAGS"
 
 if [[ -n "$USE_CXX11_ABI" ]]; then
-   EXTRA_LINUX_FLAGS="$EXTRA_FLAGS -D_GLIBCXX_USE_CXX11_ABI=0"
+   EXTRA_LINUX_FLAGS="$EXTRA_FLAGS -D_GLIBCXX_USE_CXX11_ABI=$USE_CXX11_ABI"
 else
    EXTRA_LINUX_FLAGS="$EXTRA_FLAGS"
 fi
