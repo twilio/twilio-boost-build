@@ -7,7 +7,7 @@ Libraries are packaged in Twilio style, grouped by variant (debug/release) and t
 
 Unpacking these tarballs into a single directory will create all necessary libraries underneath the abovementioned folders together with a top-level includes/boost directory for headers.
 
-To build packages use ./boost.sh with appropriate argument `-android`, `-ios`, `-osx` or `-linux`.
+To build packages use ./boost.sh with appropriate argument `-android`, `-ios`, `-osx`, `-linux` or `-linux-cxx11-abi-disabled`.
 If not specified, it will attempt to build all. It requires Maven to be installed for deployment - if you do not deploy to Maven-based repositories you can ignore it.
 
 To find the directories from cmake specify two cmake defines, e.g.:
