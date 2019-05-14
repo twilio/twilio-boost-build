@@ -1,0 +1,226 @@
+version: 2.1
+
+aliases:
+  - &workspace
+    ~/twilio-boost-build
+  - &build_output
+    ~/twilio-boost-build/target/output
+  - only-release-tags: &only-release-tags
+      filters:
+        tags:
+          only: /^release-.*/
+  - platform-parameter: &platform-parameter
+      platform:
+        description: "Platform to build"
+        type: enum
+        enum: ["android", "linux", "linux-cxx11-abi-disabled", "ios", "osx"]
+  - boost-libs-parameter: &boost-libs-parameter
+      boost-libs:
+        description: "List of boost libraries to build"
+        type: string
+        default: "atomic container context coroutine date_time exception iostreams program_options random regex serialization system test thread"
+  - pre-steps-parameter: &pre-steps-parameter
+      pre-steps:
+        description: "Steps that will be executed before build starts"
+        type: steps
+        default: []
+  - post-steps-parameter: &post-steps-parameter
+      post-steps:
+        description: "Steps that will be executed after build ends"
+        type: steps
+        default: []
+  - build-steps-parameter: &build-steps-parameter
+      build-steps:
+        description: "Steps that will be executed as main build target"
+        type: steps
+
+executors:
+  linux-android-executor:
+    docker:
+      - image: cibuilderbot/docker-circleci-linux-android
+    resource_class: xlarge
+    working_directory: *workspace
+    environment:
+      CMAKE_BUILD_PARALLEL_LEVEL: 2
+  macos-ios-executor:
+    macos:
+      xcode: "10.1.0"
+    resource_class: large
+    working_directory: *workspace
+
+commands:
+  generate_build_settings:
+    description: "Generate build env variables"
+    steps:
+      - run:
+          name: Make env variables from build tag
+          command: |
+            if [ -z "$CIRCLE_TAG" ]; then
+              echo "Must use release tag to build boost releases. Push \`release-1.71.0-twilio3\`-style tag to trigger."
+              exit 1
+            fi
+            echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
+            echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
+
+  generate_maven_settings:
+    description: "Generate Maven settings"
+    steps:
+      - run:
+          name: Generate Maven settings
+          command: echo "$BINTRAY_SETTINGS" | base64 --decode > bintray-settings.xml
+
+  prepare_macos_ios:
+    description: "Prepare environment for MacOS and iOS builds (cache enabled)"
+    parameters:
+      cache-tag:
+        description: "Cache tag"
+        type: string
+    steps:
+      - restore_cache:
+          keys:
+            - v3-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: "Install necessary components through Homebrew"
+          command: |
+            brew update
+            brew install maven
+      - save_cache:
+          key: v3-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - /usr/local/Homebrew
+
+  unpack:
+    description: "Unpack boost tarball"
+    steps:
+      - checkout
+      - generate_build_settings
+      - generate_maven_settings
+      - run:
+          name: Unpack tarball
+          command: |
+            source $BASH_ENV
+            ./boost.sh --unpack --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
+          no_output_timeout: 120m
+      - persist_to_workspace:
+          root: .
+          paths:
+            - src/*
+
+  build:
+    description: "Build and Publish"
+    parameters:
+      <<: *platform-parameter
+      <<: *boost-libs-parameter
+      <<: *pre-steps-parameter
+    steps:
+      - checkout
+      - steps: << parameters.pre-steps >>
+      - attach_workspace:
+          at: *workspace
+      - generate_build_settings
+      - generate_maven_settings
+      - run:
+          name: Build << parameters.platform >>
+          command: |
+            source $BASH_ENV
+            ./boost.sh -<< parameters.platform >> --no-clean --no-unpack --no-framework --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX --boost-libs "<< parameters.boost-libs >>"
+          no_output_timeout: 120m
+
+  mark-deployment-complete:
+    description: "Mark all deployed binaries as available for download"
+    steps:
+      - checkout
+      - generate_build_settings
+      - generate_maven_settings
+      - run:
+          name: Mark all platforms deployed
+          command: |
+            source $BASH_ENV
+            ./boost.sh --deployed --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
+          no_output_timeout: 120m
+
+jobs:
+  unpack-sources:
+    executor: linux-android-executor
+    steps:
+      - unpack
+
+  build-linux:
+    executor: linux-android-executor
+    steps:
+      - build:
+          platform: linux
+
+  # build-linux-cxx11-abi-disabled:
+  #   executor: linux-android-executor
+  #   steps:
+  #     - build:
+  #         platform: linux-cxx11-abi-disabled
+  #         boost-libs: *boost-libraries-list
+
+  build-android:
+    executor: linux-android-executor
+    steps:
+      - build:
+          platform: android
+
+  build-osx:
+    executor: macos-ios-executor
+    steps:
+      - build:
+          platform: osx
+          pre-steps:
+            - prepare_macos_ios:
+                cache-tag: xcode10
+
+  build-ios:
+    executor: macos-ios-executor
+    steps:
+      - build:
+          platform: ios
+          pre-steps:
+            - prepare_macos_ios:
+                cache-tag: xcode10
+
+  deploy-bintray:
+    executor: linux-android-executor
+    steps:
+      - mark-deployment-complete
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - unpack-sources:
+          <<: *only-release-tags
+          name: unpack
+
+      - build-android:
+          <<: *only-release-tags
+          name: build-boost-android
+          requires:
+            - unpack
+      - build-linux:
+          <<: *only-release-tags
+          name: build-boost-linux
+          requires:
+            - unpack
+      - build-ios:
+          <<: *only-release-tags
+          name: build-boost-ios
+          requires:
+            - unpack
+      - build-osx:
+          <<: *only-release-tags
+          name: build-boost-osx
+          requires:
+            - unpack
+
+      - deploy-bintray:
+          <<: *only-release-tags
+          name: deploy
+          requires:
+            - build-boost-android
+            - build-boost-linux
+            - build-boost-ios
+            - build-boost-osx
