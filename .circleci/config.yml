@@ -1,0 +1,217 @@
+version: 2.1
+
+aliases:
+  - &workspace
+    ~/twilio-boost-build
+  - &build_output
+    ~/twilio-boost-build/target/output
+  - only-release-tags: &only-release-tags
+      filters:
+        tags:
+          only: /^release-.*/
+  - platform-parameter: &platform-parameter
+      platform:
+        description: "Platform to build"
+        type: enum
+        enum: ["android", "linux", "linux-cxx11-abi-disabled", "ios", "osx"]
+  - boost-libs-parameter:
+      boost-libs:
+        description: "List of boost libraries to build"
+        type: string
+        value: "atomic container context coroutine date_time exception iostreams program_options random regex serialization system test thread"
+        # - atomic - chrono - container - context - coroutine - date_time - exception - filesystem - graph - graph_parallel - iostreams - locale - log - math - mpi - program_options - python - random - regex - serialization - signals - system - test - thread - timer - type_erasure - wave
+  - pre-steps-parameter: &pre-steps-parameter
+      pre-steps:
+        description: "Steps that will be executed before build starts"
+        type: steps
+        default: []
+  - post-steps-parameter: &post-steps-parameter
+      post-steps:
+        description: "Steps that will be executed after build ends"
+        type: steps
+        default: []
+  - build-steps-parameter: &build-steps-parameter
+      build-steps:
+        description: "Steps that will be executed as main build target"
+        type: steps
+
+executors:
+  linux-android-executor:
+    docker:
+      - image: aleksandrsivanovs/docker-android-ci
+    resource_class: xlarge
+    working_directory: *workspace
+  macos-ios-executor:
+    macos:
+      xcode: "10.1.0"
+    resource_class: large
+    working_directory: *workspace
+
+commands:
+  generate_build_settings:
+    description: "Generate build env variables"
+    steps:
+      - run:
+        name: ""
+        command: |
+          echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
+          echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
+          echo 'export REPO_URL=https://api.bintray.com/maven/twilio/releases/rtd-cpp-boost-lib/;publish=0' >> $BASH_ENV
+          echo 'export REPO_ID=bintray' >> $BASH_ENV
+
+  generate_maven_settings:
+    description: "Generate Maven settings"
+    steps:
+      - run:
+          name: Generate Maven settings
+          command: echo "$BINTRAY_SETTINGS" | base64 --decode > bintray-settings.xml
+          working_directory: *workspace
+
+  prepare_macos_ios:
+    description: "Prepare environment for MacOS and iOS builds (cache enabled)"
+    parameters:
+      cache-tag:
+        description: "Cache tag"
+        type: string
+    steps:
+      - restore_cache:
+          keys:
+            - v3-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
+      - run:
+          name: "Install necessary components through Homebrew"
+          command: |
+            brew update
+            brew install maven
+      - save_cache:
+          key: v3-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
+          paths:
+            - /usr/local/Homebrew
+
+  unpack:
+    description: "Unpack boost tarball"
+    parameters:
+      <<: *platform-parameter
+      <<: *boost-libs-parameter
+      <<: *pre-steps-parameter
+    steps:
+      - checkout
+      - steps: << parameters.pre-steps >>
+      - generate_build_settings
+      - generate_maven_settings
+
+  build:
+    description: "Build and Publish"
+    parameters:
+      <<: *platform-parameter
+      <<: *boost-libs-parameter
+      <<: *pre-steps-parameter
+    steps:
+      - checkout
+      - steps: << parameters.pre-steps >>
+      - generate_build_settings
+      - generate_maven_settings
+      - run:
+          name: Build << parameters.platform >>
+          command: |
+            source ~/.bashrc
+            ./boost.sh -<< parameters.platform >> --no-framework --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX --boost-libs "<< parameters.boost-libs >>"
+          no_output_timeout: 120m
+          environment:
+            DEST_DIR: *build_output
+
+jobs:
+  unpack-sources:
+    executor: linux-android-executor
+    steps:
+      - unpack
+      - persist-workspace
+
+  build-linux:
+    executor: linux-android-executor
+    steps:
+      - build:
+          platform: linux
+
+  # build-linux-cxx11-abi-disabled:
+  #   executor: linux-android-executor
+  #   steps:
+  #     - build:
+  #         platform: linux-cxx11-abi-disabled
+
+  build-android:
+    executor: linux-android-executor
+    steps:
+      - build:
+          platform: android
+
+  build-osx:
+    executor: macos-ios-executor
+    steps:
+      - build:
+          platform: osx
+          pre-steps:
+            - prepare_macos_ios:
+                cache-tag: xcode10
+
+  build-ios:
+    executor: macos-ios-executor
+    steps:
+      - build:
+          platform: ios
+          pre-steps:
+            - prepare_macos_ios:
+                cache-tag: xcode10
+
+  deploy-bintray:
+    executor: linux-android-executor
+    steps:
+      - mark-deployment-complete
+
+workflows:
+  unpack:
+    jobs:
+      - unpack-sources:
+          <<: *only-release-tags
+          name: unpack-boost-android
+
+  android:
+    jobs:
+      - build-android:
+          <<: *only-release-tags
+          name: build-boost-android
+          depends:
+            - unpack-sources
+
+  linux:
+    jobs:
+      - build-linux:
+          <<: *only-release-tags
+          name: build-boost-linux
+          depends:
+            - unpack-sources
+
+  ios:
+    jobs:
+      - build-ios:
+          <<: *only-release-tags
+          name: build-boost-ios
+          depends:
+            - unpack-sources
+
+  osx:
+    jobs:
+      - build-osx:
+          <<: *only-release-tags
+          name: build-boost-osx
+          depends:
+            - unpack-sources
+
+  publish:
+    jobs:
+      - deploy-bintray:
+          <<: *only-release-tags
+        depends:
+          - build-android
+          - build-linux
+          - build-ios
+          - build-osx
