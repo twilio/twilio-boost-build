@@ -905,30 +905,24 @@ buildBoost_Linux()
     mkdir -p $LINUXOUTPUTDIR
     echo > ${LINUXOUTPUTDIR}/linux-build.log
 
-    for VARIANT in debug release; do
-        echo Building $VARIANT 64-bit Boost for Linux
-        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
-            --prefix="$OUTPUT_DIR" \
-            --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86_64" \
-            address-model=64 variant=$VARIANT \
-            optimization=speed \
-            cxxflags="${CXX_FLAGS} ${CPPSTD}" \
-            link=static threading=multi \
-            install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log"; exit 1; fi
-    done
-
-    for VARIANT in debug release; do
-        echo Building $VARIANT 32-bit Boost for Linux
-        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
-            --prefix="$OUTPUT_DIR" \
-            --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86" \
-            address-model=32 variant=$VARIANT \
-            optimization=speed \
-            cxxflags="${CXX_FLAGS} ${CPPSTD}" \
-            link=static threading=multi \
-            install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log"; exit 1; fi
+    for BITS in 64 32; do
+        for VARIANT in debug release; do
+            echo Building $VARIANT $BITS-bit Boost for Linux
+            if [[ $BITS = 64 ]]; then
+                LIBDIR_SUFFIX=x86_64
+            else
+                LIBDIR_SUFFIX=x86
+            fi
+            ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
+                --prefix="$OUTPUT_DIR" \
+                --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/$LIBDIR_SUFFIX" \
+                address-model=$BITS variant=$VARIANT \
+                optimization=speed \
+                cxxflags="${CXX_FLAGS} ${CPPSTD}" \
+                link=static threading=multi \
+                install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
+            if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log"; exit 1; fi
+        done
     done
 
     doneSection
