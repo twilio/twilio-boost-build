@@ -56,8 +56,6 @@ commands:
         command: |
           echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
           echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
-          echo 'export REPO_URL=https://api.bintray.com/maven/twilio/releases/rtd-cpp-boost-lib/;publish=0' >> $BASH_ENV
-          echo 'export REPO_ID=bintray' >> $BASH_ENV
 
   generate_maven_settings:
     description: "Generate Maven settings"
@@ -98,6 +96,19 @@ commands:
       - steps: << parameters.pre-steps >>
       - generate_build_settings
       - generate_maven_settings
+      - run:
+          name: Unpack tarball
+          command: |
+            source $BASH_ENV
+            ./boost.sh --unpack --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
+          no_output_timeout: 120m
+          environment:
+            DEST_DIR: *build_output
+      - persist_to_workspace:
+          root: .
+          paths:
+            - target/build/*
+            - target/output/*
 
   build:
     description: "Build and Publish"
@@ -108,16 +119,30 @@ commands:
     steps:
       - checkout
       - steps: << parameters.pre-steps >>
+      - attach_workspace:
+          at: *workspace
       - generate_build_settings
       - generate_maven_settings
       - run:
           name: Build << parameters.platform >>
           command: |
-            source ~/.bashrc
-            ./boost.sh -<< parameters.platform >> --no-framework --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX --boost-libs "<< parameters.boost-libs >>"
+            source $BASH_ENV
+            ./boost.sh -<< parameters.platform >> --no-clean --no-download --no-framework --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX --boost-libs "<< parameters.boost-libs >>"
           no_output_timeout: 120m
-          environment:
-            DEST_DIR: *build_output
+
+  mark-deployment-complete:
+    description: "Mark all deployed binaries as available for download"
+    steps:
+      - checkout
+      - steps: << parameters.pre-steps >>
+      - generate_build_settings
+      - generate_maven_settings
+      - run:
+          name: Mark all platforms deployed
+          command: |
+            source $BASH_ENV
+            ./boost.sh --deployed --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
+          no_output_timeout: 120m
 
 jobs:
   unpack-sources:

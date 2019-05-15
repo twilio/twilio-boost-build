@@ -42,6 +42,9 @@ CLEAN=
 NO_CLEAN=
 NO_FRAMEWORK=
 USE_CXX11_ABI=
+NO_PACKAGE_LIBS=
+NO_UNPACK=
+MARK_DEPLOYED_ONLY=
 
 BOOST_VERSION=1.69.0
 BOOST_VERSION2=1_69_0
@@ -49,6 +52,11 @@ BOOST_VERSION2=1_69_0
 ASYNC_COMMIT=94fe4433287df569ce1aa384b248793552980711
 
 TWILIO_SUFFIX=
+
+BINTRAY_API_URL=https://api.bintray.com
+REPO_URL_FRAGMENT=twilio/releases/rtd-cpp-boost-lib
+REPO_URL=${BINTRAY_API_URL}/maven/${REPO_URL_FRAGMENT}/;publish=0
+REPO_ID=bintray
 
 MIN_IOS_VERSION=9.0
 IOS_SDK_VERSION=`xcrun --sdk iphoneos --show-sdk-version`
@@ -132,6 +140,12 @@ OPTIONS:
 
     --unpack
         Only unpack sources, dont build.
+
+    --no-unpack
+        Do not download or unpack anything. Use local unpacked copy.
+
+    --mark-bintray-deployed
+        Only send request to bintray to mark packages published. Do nothing else.
 
     --boost-version [num]
         Specify which version of Boost to build. Defaults to $BOOST_VERSION.
@@ -336,6 +350,14 @@ parseArgs()
 
             --no-framework)
                 NO_FRAMEWORK=1
+                ;;
+
+            --no-unpack)
+                NO_UNPACK=1
+                ;;
+
+            --mark-bintray-deployed)
+                MARK_DEPLOYED_ONLY=1
                 ;;
 
             *)
@@ -1069,31 +1091,18 @@ deployToBintray()
         abort "Specify REPO_ID to deploy"
     fi
 
-    if [[ -z "$BINTRAY_USERNAME" || -z "$BINTRAY_PASSWORD" ]]; then
-        abort "Specify both BINTRAY_USERNAME and BINTRAY_PASSWORD to deploy to Bintray"
-    fi
-
     BUILDDIR="$CURRENT_DIR/target/distributions"
-    SETTINGS_FILE="$CURRENT_DIR/settings.xml"
-
-    # Generate settings.xml with bintray password
-    cat <<EOF > $SETTINGS_FILE
-<?xml version='1.0' encoding='UTF-8'?>
-<settings xsi:schemaLocation='http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd'
-          xmlns='http://maven.apache.org/SETTINGS/1.0.0' xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance'>
-    <servers>
-        <server>
-            <id>$REPO_ID</id>
-            <username>${BINTRAY_USERNAME}</username>
-            <password>${BINTRAY_PASSWORD}</password>
-        </server>
-    </servers>
-</settings>
-EOF
+    SETTINGS_FILE="$CURRENT_DIR/bintray-settings.xml"
 
     SETTINGS_FILE="-s $SETTINGS_FILE"
 
     deployToNexus
+}
+
+markBintrayDeployed()
+{
+    BINTRAY_USERNAME:BINTRAY_PASSWORD...
+    curl -X POST ${BINTRAY_API_URL}/content/${REPO_URL_FRAGMENT}/:version/publish
 }
 
 #===============================================================================
@@ -1372,12 +1381,28 @@ if [[ -z $UNPACK && -z $BUILD_IOS && -z $BUILD_TVOS && -z $BUILD_OSX && -z $BUIL
 fi
 
 if [[ -n $UNPACK ]]; then
+    NO_DOWNLOAD=
     BUILD_ANDROID=
     BUILD_IOS=
     BUILD_TVOS=
     BUILD_OSX=
     BUILD_LINUX=
     BUILD_HEADERS=
+fi
+
+if [[ -n $MARK_DEPLOYED_ONLY ]]; then
+    CLEAN=
+    NO_CLEAN=1
+    UNPACK=
+    NO_DOWNLOAD=1
+    BUILD_ANDROID=
+    BUILD_IOS=
+    BUILD_TVOS=
+    BUILD_OSX=
+    BUILD_LINUX=
+    BUILD_HEADERS=
+    NO_FRAMEWORK=1
+    NO_PACKAGE_LIBS=1
 fi
 
 # The EXTRA_FLAGS definition works around a thread race issue in
@@ -1457,10 +1482,12 @@ if [ -z $NO_CLEAN ]; then
     cleanup
 fi
 
-downloadBoost
-unpackBoost
-unpackAsynchronous
-inventMissingHeaders
+if [ -z $NO_DOWNLOAD ]; then
+    downloadBoost
+    unpackBoost
+    unpackAsynchronous
+    inventMissingHeaders
+fi
 
 if [ -n "$UNPACK" ]; then
     exit
@@ -1505,8 +1532,15 @@ fi
 if [[ -n "$BUILD_HEADERS" ]]; then
     packageHeaders
 fi
-packageLibSet
 
-deployToBintray
+if [[ -z $NO_PACKAGE_LIBS ]]; then
+    packageLibSet
+fi
+
+if [[ -z $MARK_DEPLOYED_ONLY ]]; then
+    deployToBintray
+else
+    markBintrayDeployed
+fi
 
 echo "Completed successfully"
