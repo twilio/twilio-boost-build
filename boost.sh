@@ -971,34 +971,32 @@ packageLibEntry()
     BUILDDIR="$CURRENT_DIR/target/distributions"
     mkdir -p "${BUILDDIR}"
 
-    DIR="$1"
-    NAME="$2"
+    NAME="$1"
 
     echo Packaging boost-$NAME...
 
-    if [[ -z "$3" ]]; then
+    if [[ -z "$2" ]]; then
         PATTERN="-name *libboost_${NAME}*"
     else
         PATTERN="-name NOTMATCHED"
-        for PAT in $3; do
+        for PAT in $2; do
             PATTERN="$PATTERN -o -name *libboost_${PAT}*"
         done
     fi
 
-    (cd $OUTPUT_DIR/$DIR; find lib -type f $PATTERN | tar cvjf "${BUILDDIR}/boost-${NAME}-${BOOST_VERSION}${TWILIO_SUFFIX}-${DIR}.tar.bz2" -T -)
+    (cd $OUTPUT_DIR; find lib -type f $PATTERN | tar cvjf "${BUILDDIR}/boost-${NAME}-${BOOST_VERSION}${TWILIO_SUFFIX}-${BOOST_PLATFORM}.tar.bz2" -T -)
 }
 
 packageLibSet()
 {
     echo Packaging Boost libraries...
-    DIR=$1
     for lib in $BOOST_LIBS; do
         if [ "$lib" == "serialization" ]; then
-            packageLibEntry $DIR serialization "serialization wserialization"
+            packageLibEntry serialization "serialization wserialization"
         elif [ "$lib" == "test" ]; then
-            packageLibEntry $DIR test "prg_exec_monitor test_exec_monitor unit_test_framework"
+            packageLibEntry test "prg_exec_monitor test_exec_monitor unit_test_framework"
         else
-            packageLibEntry $DIR $lib
+            packageLibEntry $lib
         fi
     done
 }
@@ -1507,7 +1505,7 @@ fi
 if [[ -n "$BUILD_HEADERS" ]]; then
     packageHeaders
 fi
-packageLibSet "$BOOST_PLATFORM"
+packageLibSet
 
 deployToBintray
 
