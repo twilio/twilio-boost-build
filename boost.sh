@@ -908,11 +908,13 @@ buildBoost_Linux()
     for BITS in 64 32; do
         for VARIANT in debug release; do
             echo Building $VARIANT $BITS-bit Boost for Linux
-            if [[ $BITS = 64 ]]; then
+
+            if [[ $BITS == 64 ]]; then
                 LIBDIR_SUFFIX=x86_64
             else
                 LIBDIR_SUFFIX=x86
             fi
+
             ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
                 --prefix="$OUTPUT_DIR" \
                 --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/$LIBDIR_SUFFIX" \
@@ -1002,7 +1004,11 @@ packageLibs()
     fi
 
     if [[ -n "$BUILD_LINUX" ]]; then
-        packageLibSet "linux"
+        if [[ "$USE_CXX11_ABI" = 0 ]]; then
+            packageLibSet "linux-cxx11-abi-disabled"
+        else
+            packageLibSet "linux"
+        fi
     fi
 }
 
