@@ -676,7 +676,7 @@ updateBoost()
         generateAndroidUserConfig
     fi
 
-    if [[ "$1" == "Linux" -o "$1" == "Linux-CXX11-ABI-Disabled" ]]; then
+    if [[ "$1" == "Linux" || "$1" == "Linux-CXX11-ABI-Disabled" ]]; then
         generateLinuxUserConfig
     fi
 
@@ -1057,7 +1057,7 @@ deployToNexus()
         deployPlat "osx" "$BUILDDIR"
     fi
     if [[ -n "$BUILD_LINUX" ]]; then
-        if [[ "$USE_CXX11_ABI" = 0 ]]; then
+        if [[ "$USE_CXX11_ABI" == 0 ]]; then
             deployPlat "linux-cxx11-abi-disabled" "$BUILDDIR"
         else
             deployPlat "linux" "$BUILDDIR"
