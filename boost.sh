@@ -43,10 +43,10 @@ NO_CLEAN=
 NO_FRAMEWORK=
 USE_CXX11_ABI=
 
-BOOST_VERSION=1.67.0
-BOOST_VERSION2=1_67_0
+BOOST_VERSION=1.69.0
+BOOST_VERSION2=1_69_0
 
-ASYNC_COMMIT=0a35ece14492863980dababcdd3aa1d0fffd05f2
+ASYNC_COMMIT=94fe4433287df569ce1aa384b248793552980711
 
 TWILIO_SUFFIX=
 
@@ -105,6 +105,8 @@ OPTIONS:
     -h | --help
         Display these options and exit.
 
+ *  Platform selection is mutually exclusive - you can build only one platform at a time.
+
     -android
         Build for the Android platform.
 
@@ -125,6 +127,8 @@ OPTIONS:
 
     -headers
         Package headers.
+
+ *  Common options.
 
     --unpack
         Only unpack sources, dont build.
@@ -187,31 +191,45 @@ parseArgs()
 
             -android)
                 BUILD_ANDROID=1
+                BOOST_PLATFORM=android
+                BOOST_PLATFORM_NAME=Android
                 ;;
 
             -ios)
                 BUILD_IOS=1
+                BOOST_PLATFORM=ios
+                BOOST_PLATFORM_NAME=iOS
                 ;;
 
             -tvos)
                 BUILD_TVOS=1
+                BOOST_PLATFORM=tvos
+                BOOST_PLATFORM_NAME=tvOS
                 ;;
 
             -osx)
                 BUILD_OSX=1
+                BOOST_PLATFORM=osx
+                BOOST_PLATFORM_NAME=OSX
                 ;;
 
             -linux)
                 BUILD_LINUX=1
+                BOOST_PLATFORM=linux
+                BOOST_PLATFORM_NAME=Linux
                 ;;
 
             -linux-cxx11-abi-disabled)
                 BUILD_LINUX=1
                 USE_CXX11_ABI=0
+                BOOST_PLATFORM=linux-cxx11-abi-disabled
+                BOOST_PLATFORM_NAME=Linux-CXX11-ABI-Disabled
                 ;;
 
             -headers)
                 BUILD_HEADERS=1
+                BOOST_PLATFORM=all
+                BOOST_PLATFORM_NAME=All
                 ;;
 
             --boost-version)
@@ -426,8 +444,8 @@ unpackBoost()
     [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xfj "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
     echo "    ...unpacked as $BOOST_SRC"
 
-    echo Applying patches...
-    (cd $BOOST_SRC; patch -p2 < $CURRENT_DIR/patches/boost_1_68_0_provider_getrandom_android.patch)
+    echo Applying patches, if any...
+    (cd $BOOST_SRC; patch -p2 < $CURRENT_DIR/patches/boost_${BOOST_VERSION2}*.patch) || echo "Patching failed"
 
     doneSection
 }
@@ -658,7 +676,7 @@ updateBoost()
         generateAndroidUserConfig
     fi
 
-    if [[ "$1" == "Linux" ]]; then
+    if [[ "$1" == "Linux" -o "$1" == "Linux-CXX11-ABI-Disabled" ]]; then
         generateLinuxUserConfig
     fi
 
@@ -905,30 +923,26 @@ buildBoost_Linux()
     mkdir -p $LINUXOUTPUTDIR
     echo > ${LINUXOUTPUTDIR}/linux-build.log
 
-    for VARIANT in debug release; do
-        echo Building $VARIANT 64-bit Boost for Linux
-        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
-            --prefix="$OUTPUT_DIR" \
-            --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86_64" \
-            address-model=64 variant=$VARIANT \
-            optimization=speed \
-            cxxflags="${CXX_FLAGS} ${CPPSTD}" \
-            link=static threading=multi \
-            install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log"; exit 1; fi
-    done
+    for BITS in 64 32; do
+        for VARIANT in debug release; do
+            echo Building $VARIANT $BITS-bit Boost for Linux
 
-    for VARIANT in debug release; do
-        echo Building $VARIANT 32-bit Boost for Linux
-        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
-            --prefix="$OUTPUT_DIR" \
-            --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/x86" \
-            address-model=32 variant=$VARIANT \
-            optimization=speed \
-            cxxflags="${CXX_FLAGS} ${CPPSTD}" \
-            link=static threading=multi \
-            install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log"; exit 1; fi
+            if [[ $BITS == 64 ]]; then
+                LIBDIR_SUFFIX=x86_64
+            else
+                LIBDIR_SUFFIX=x86
+            fi
+
+            ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
+                --prefix="$OUTPUT_DIR" \
+                --libdir="$LINUXOUTPUTDIR/lib/$VARIANT/$LIBDIR_SUFFIX" \
+                address-model=$BITS variant=$VARIANT \
+                optimization=speed \
+                cxxflags="${CXX_FLAGS} ${CPPSTD}" \
+                link=static threading=multi \
+                install >> "${LINUXOUTPUTDIR}/linux-build.log" 2>&1
+            if [ $? != 0 ]; then echo "Error staging Linux. Check ${LINUXOUTPUTDIR}/linux-build.log"; exit 1; fi
+        done
     done
 
     doneSection
@@ -987,29 +1001,6 @@ packageLibSet()
             packageLibEntry $DIR $lib
         fi
     done
-}
-
-packageLibs()
-{
-    if [[ -n "$BUILD_ANDROID" ]]; then
-        packageLibSet "android"
-    fi
-
-    if [[ -n "$BUILD_IOS" ]]; then
-        packageLibSet "ios"
-    fi
-
-    if [[ -n "$BUILD_TVOS" ]]; then
-        packageLibSet "tvos"
-    fi
-
-    if [[ -n "$BUILD_OSX" ]]; then
-        packageLibSet "osx"
-    fi
-
-    if [[ -n "$BUILD_LINUX" ]]; then
-        packageLibSet "linux"
-    fi
 }
 
 #===============================================================================
@@ -1489,29 +1480,22 @@ if [ -n "$UNPACK" ]; then
     exit
 fi
 
+updateBoost "$BOOST_PLATFORM_NAME"
+bootstrapBoost "$BOOST_PLATFORM_NAME"
+
 if [[ -n $BUILD_ANDROID ]]; then
-    updateBoost "Android"
-    bootstrapBoost "Android"
     buildBoost_Android
 fi
 if [[ -n $BUILD_IOS ]]; then
-    updateBoost "iOS"
-    bootstrapBoost "iOS"
     buildBoost_iOS
 fi
 if [[ -n $BUILD_TVOS ]]; then
-    updateBoost "tvOS"
-    bootstrapBoost "tvOS"
     buildBoost_tvOS
 fi
 if [[ -n $BUILD_OSX ]]; then
-    updateBoost "OSX"
-    bootstrapBoost "OSX"
     buildBoost_OSX
 fi
 if [[ -n $BUILD_LINUX ]]; then
-    updateBoost "Linux"
-    bootstrapBoost "Linux"
     buildBoost_Linux
 fi
 
@@ -1535,7 +1519,7 @@ fi
 if [[ -n "$BUILD_HEADERS" ]]; then
     packageHeaders
 fi
-packageLibs
+packageLibSet "$BOOST_PLATFORM"
 
 deployToBintray
 
