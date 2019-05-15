@@ -105,6 +105,8 @@ OPTIONS:
     -h | --help
         Display these options and exit.
 
+ *  Platform selection is mutually exclusive - you can build only one platform at a time.
+
     -android
         Build for the Android platform.
 
@@ -125,6 +127,8 @@ OPTIONS:
 
     -headers
         Package headers.
+
+ *  Common options.
 
     --unpack
         Only unpack sources, dont build.
@@ -187,31 +191,45 @@ parseArgs()
 
             -android)
                 BUILD_ANDROID=1
+                BOOST_PLATFORM=android
+                BOOST_PLATFORM_NAME=Android
                 ;;
 
             -ios)
                 BUILD_IOS=1
+                BOOST_PLATFORM=ios
+                BOOST_PLATFORM_NAME=iOS
                 ;;
 
             -tvos)
                 BUILD_TVOS=1
+                BOOST_PLATFORM=tvos
+                BOOST_PLATFORM_NAME=tvOS
                 ;;
 
             -osx)
                 BUILD_OSX=1
+                BOOST_PLATFORM=osx
+                BOOST_PLATFORM_NAME=OSX
                 ;;
 
             -linux)
                 BUILD_LINUX=1
+                BOOST_PLATFORM=linux
+                BOOST_PLATFORM_NAME=Linux
                 ;;
 
             -linux-cxx11-abi-disabled)
                 BUILD_LINUX=1
                 USE_CXX11_ABI=0
+                BOOST_PLATFORM=linux-cxx11-abi-disabled
+                BOOST_PLATFORM_NAME=Linux-CXX11-ABI-Disabled
                 ;;
 
             -headers)
                 BUILD_HEADERS=1
+                BOOST_PLATFORM=all
+                BOOST_PLATFORM_NAME=All
                 ;;
 
             --boost-version)
@@ -658,7 +676,7 @@ updateBoost()
         generateAndroidUserConfig
     fi
 
-    if [[ "$1" == "Linux" ]]; then
+    if [[ "$1" == "Linux" -o "$1" == "Linux-CXX11-ABI-Disabled" ]]; then
         generateLinuxUserConfig
     fi
 
@@ -983,33 +1001,6 @@ packageLibSet()
             packageLibEntry $DIR $lib
         fi
     done
-}
-
-packageLibs()
-{
-    if [[ -n "$BUILD_ANDROID" ]]; then
-        packageLibSet "android"
-    fi
-
-    if [[ -n "$BUILD_IOS" ]]; then
-        packageLibSet "ios"
-    fi
-
-    if [[ -n "$BUILD_TVOS" ]]; then
-        packageLibSet "tvos"
-    fi
-
-    if [[ -n "$BUILD_OSX" ]]; then
-        packageLibSet "osx"
-    fi
-
-    if [[ -n "$BUILD_LINUX" ]]; then
-        if [[ "$USE_CXX11_ABI" = 0 ]]; then
-            packageLibSet "linux-cxx11-abi-disabled"
-        else
-            packageLibSet "linux"
-        fi
-    fi
 }
 
 #===============================================================================
@@ -1489,29 +1480,22 @@ if [ -n "$UNPACK" ]; then
     exit
 fi
 
+updateBoost "$BOOST_PLATFORM_NAME"
+bootstrapBoost "$BOOST_PLATFORM_NAME"
+
 if [[ -n $BUILD_ANDROID ]]; then
-    updateBoost "Android"
-    bootstrapBoost "Android"
     buildBoost_Android
 fi
 if [[ -n $BUILD_IOS ]]; then
-    updateBoost "iOS"
-    bootstrapBoost "iOS"
     buildBoost_iOS
 fi
 if [[ -n $BUILD_TVOS ]]; then
-    updateBoost "tvOS"
-    bootstrapBoost "tvOS"
     buildBoost_tvOS
 fi
 if [[ -n $BUILD_OSX ]]; then
-    updateBoost "OSX"
-    bootstrapBoost "OSX"
     buildBoost_OSX
 fi
 if [[ -n $BUILD_LINUX ]]; then
-    updateBoost "Linux"
-    bootstrapBoost "Linux"
     buildBoost_Linux
 fi
 
@@ -1535,7 +1519,7 @@ fi
 if [[ -n "$BUILD_HEADERS" ]]; then
     packageHeaders
 fi
-packageLibs
+packageLibSet "$BOOST_PLATFORM"
 
 deployToBintray
 
