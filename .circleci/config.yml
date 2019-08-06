@@ -54,7 +54,7 @@ commands:
           name: Make env variables from build tag
           command: |
             if [ -z "$CIRCLE_TAG" ]; then
-              echo "Must use release tag to build boost releases. Push \`release-1.71.0-twilio3\` style tag to trigger."
+              echo "Must use release tag to build boost releases. Push \`release-1.71.0-twilio3\`-style tag to trigger."
               exit 1
             fi
             echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
