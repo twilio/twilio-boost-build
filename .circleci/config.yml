@@ -123,7 +123,7 @@ commands:
           name: Build << parameters.platform >>
           command: |
             source $BASH_ENV
-            ./boost.sh -<< parameters.platform >> --no-clean --no-download --no-framework --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX --boost-libs "<< parameters.boost-libs >>"
+            ./boost.sh -<< parameters.platform >> --no-clean --no-unpack --no-framework --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX --boost-libs "<< parameters.boost-libs >>"
           no_output_timeout: 120m
 
   mark-deployment-complete:
