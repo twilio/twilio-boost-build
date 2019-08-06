@@ -40,6 +40,8 @@ executors:
       - image: cibuilderbot/docker-circleci-linux-android
     resource_class: xlarge
     working_directory: *workspace
+    environment:
+      CMAKE_BUILD_PARALLEL_LEVEL: 2
   macos-ios-executor:
     macos:
       xcode: "10.1.0"
@@ -59,7 +61,6 @@ commands:
             fi
             echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
             echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
-          working_directory: *workspace
 
   generate_maven_settings:
     description: "Generate Maven settings"
@@ -67,7 +68,6 @@ commands:
       - run:
           name: Generate Maven settings
           command: echo "$BINTRAY_SETTINGS" | base64 --decode > bintray-settings.xml
-          working_directory: *workspace
 
   prepare_macos_ios:
     description: "Prepare environment for MacOS and iOS builds (cache enabled)"
@@ -101,8 +101,6 @@ commands:
             source $BASH_ENV
             ./boost.sh --unpack --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
           no_output_timeout: 120m
-          environment:
-            DEST_DIR: *build_output
       - persist_to_workspace:
           root: .
           paths:
