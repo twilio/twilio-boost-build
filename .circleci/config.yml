@@ -197,7 +197,7 @@ workflows:
     jobs:
       - unpack-sources:
           <<: *only-release-tags
-          name: unpack-boost-android
+          name: unpack-boost
 
   android:
     jobs:
@@ -205,28 +205,28 @@ workflows:
           <<: *only-release-tags
           name: build-boost-android
           requires:
-            - unpack
+            - unpack-boost
   linux:
     jobs:
       - build-linux:
           <<: *only-release-tags
           name: build-boost-linux
           requires:
-            - unpack
+            - unpack-boost
   ios:
     jobs:
       - build-ios:
           <<: *only-release-tags
           name: build-boost-ios
           requires:
-            - unpack
+            - unpack-boost
   osx:
     jobs:
       - build-osx:
           <<: *only-release-tags
           name: build-boost-osx
           requires:
-            - unpack
+            - unpack-boost
 
   publish:
     jobs:
@@ -234,7 +234,7 @@ workflows:
           <<: *only-release-tags
           name: deploy
           requires:
-            - android
-            - linux
-            - ios
-            - osx
+            - build-boost-android
+            - build-boost-linux
+            - build-boost-ios
+            - build-boost-osx
