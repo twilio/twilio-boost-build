@@ -27,6 +27,7 @@
 # tarball in the current directory and the script will use that.
 #
 #===============================================================================
+set -x
 
 ALL_BOOST_LIBS="atomic chrono container context coroutine date_time exception filesystem graph graph_parallel iostreams locale log math mpi program_options python random regex serialization signals system test thread timer type_erasure wave"
 BOOST_LIBS="atomic container context coroutine date_time exception iostreams program_options random regex serialization system test thread"
@@ -672,7 +673,7 @@ EOF
 generateLinuxUserConfig()
 {
     cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
-using gcc : : g++-7 $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
+using gcc : : g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
 : <architecture>x86 <target-os>linux
 ;
 EOF
