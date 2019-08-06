@@ -231,8 +231,9 @@ workflows:
     jobs:
       - deploy-bintray:
           <<: *only-release-tags
-        requires:
-          - android
-          - linux
-          - ios
-          - osx
+          name: deploy
+          requires:
+            - android
+            - linux
+            - ios
+            - osx
