@@ -37,7 +37,7 @@ aliases:
 executors:
   linux-android-executor:
     docker:
-      - image: aleksandrsivanovs/docker-android-ci
+      - image: cibuilderbot/docker-circleci-linux-android
     resource_class: xlarge
     working_directory: *workspace
   macos-ios-executor:
