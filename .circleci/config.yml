@@ -129,7 +129,6 @@ commands:
     description: "Mark all deployed binaries as available for download"
     steps:
       - checkout
-      - steps: << parameters.pre-steps >>
       - generate_build_settings
       - generate_maven_settings
       - run:
