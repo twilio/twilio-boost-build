@@ -193,43 +193,34 @@ jobs:
       - mark-deployment-complete
 
 workflows:
-  unpack:
+  version: 2
+  build-and-deploy:
     jobs:
       - unpack-sources:
           <<: *only-release-tags
-          name: unpack-boost
+          name: unpack
 
-  android:
-    jobs:
       - build-android:
           <<: *only-release-tags
           name: build-boost-android
           requires:
-            - unpack-boost
-  linux:
-    jobs:
+            - unpack
       - build-linux:
           <<: *only-release-tags
           name: build-boost-linux
           requires:
-            - unpack-boost
-  ios:
-    jobs:
+            - unpack
       - build-ios:
           <<: *only-release-tags
           name: build-boost-ios
           requires:
-            - unpack-boost
-  osx:
-    jobs:
+            - unpack
       - build-osx:
           <<: *only-release-tags
           name: build-boost-osx
           requires:
-            - unpack-boost
+            - unpack
 
-  publish:
-    jobs:
       - deploy-bintray:
           <<: *only-release-tags
           name: deploy
