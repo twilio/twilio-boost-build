@@ -204,35 +204,35 @@ workflows:
           <<: *only-release-tags
           name: build-boost-android
           requires:
-            - unpack-sources
+            - unpack
   linux:
     jobs:
       - build-linux:
           <<: *only-release-tags
           name: build-boost-linux
           requires:
-            - unpack-sources
+            - unpack
   ios:
     jobs:
       - build-ios:
           <<: *only-release-tags
           name: build-boost-ios
           requires:
-            - unpack-sources
+            - unpack
   osx:
     jobs:
       - build-osx:
           <<: *only-release-tags
           name: build-boost-osx
           requires:
-            - unpack-sources
+            - unpack
 
   publish:
     jobs:
       - deploy-bintray:
           <<: *only-release-tags
         requires:
-          - build-android
-          - build-linux
-          - build-ios
-          - build-osx
+          - android
+          - linux
+          - ios
+          - osx
