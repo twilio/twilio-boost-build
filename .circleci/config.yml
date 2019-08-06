@@ -5,6 +5,9 @@ aliases:
     ~/twilio-boost-build
   - &build_output
     ~/twilio-boost-build/target/output
+  - &boost-libraries-list
+    "atomic container context coroutine date_time exception iostreams program_options random regex serialization system test thread"
+    # - atomic - chrono - container - context - coroutine - date_time - exception - filesystem - graph - graph_parallel - iostreams - locale - log - math - mpi - program_options - python - random - regex - serialization - signals - system - test - thread - timer - type_erasure - wave
   - only-release-tags: &only-release-tags
       filters:
         tags:
@@ -18,8 +21,6 @@ aliases:
       boost-libs:
         description: "List of boost libraries to build"
         type: string
-        value: "atomic container context coroutine date_time exception iostreams program_options random regex serialization system test thread"
-        # - atomic - chrono - container - context - coroutine - date_time - exception - filesystem - graph - graph_parallel - iostreams - locale - log - math - mpi - program_options - python - random - regex - serialization - signals - system - test - thread - timer - type_erasure - wave
   - pre-steps-parameter: &pre-steps-parameter
       pre-steps:
         description: "Steps that will be executed before build starts"
@@ -155,24 +156,28 @@ jobs:
     steps:
       - build:
           platform: linux
+          boost-libs: *boost-libraries-list
 
   # build-linux-cxx11-abi-disabled:
   #   executor: linux-android-executor
   #   steps:
   #     - build:
   #         platform: linux-cxx11-abi-disabled
+  #         boost-libs: *boost-libraries-list
 
   build-android:
     executor: linux-android-executor
     steps:
       - build:
           platform: android
+          boost-libs: *boost-libraries-list
 
   build-osx:
     executor: macos-ios-executor
     steps:
       - build:
           platform: osx
+          boost-libs: *boost-libraries-list
           pre-steps:
             - prepare_macos_ios:
                 cache-tag: xcode10
@@ -182,6 +187,7 @@ jobs:
     steps:
       - build:
           platform: ios
+          boost-libs: *boost-libraries-list
           pre-steps:
             - prepare_macos_ios:
                 cache-tag: xcode10
