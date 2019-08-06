@@ -136,7 +136,7 @@ commands:
           name: Mark all platforms deployed
           command: |
             source $BASH_ENV
-            ./boost.sh --deployed --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
+            ./boost.sh --mark-bintray-deployed --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
           no_output_timeout: 120m
 
 jobs:
