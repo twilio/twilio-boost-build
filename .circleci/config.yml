@@ -14,7 +14,7 @@ aliases:
         description: "Platform to build"
         type: enum
         enum: ["android", "linux", "linux-cxx11-abi-disabled", "ios", "osx"]
-  - boost-libs-parameter:
+  - boost-libs-parameter: &boost-libs-parameter
       boost-libs:
         description: "List of boost libraries to build"
         type: string
