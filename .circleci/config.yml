@@ -104,8 +104,7 @@ commands:
       - persist_to_workspace:
           root: .
           paths:
-            - target/build/*
-            - target/output/*
+            - src/*
 
   build:
     description: "Build and Publish"
