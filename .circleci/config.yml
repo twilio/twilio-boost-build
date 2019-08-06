@@ -51,10 +51,11 @@ commands:
     description: "Generate build env variables"
     steps:
       - run:
-        name: ""
-        command: |
-          echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
-          echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
+          name: Make env variables from build tag
+          command: |
+            echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
+            echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
+          working_directory: *workspace
 
   generate_maven_settings:
     description: "Generate Maven settings"
