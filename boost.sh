@@ -1101,8 +1101,11 @@ deployToBintray()
 
 markBintrayDeployed()
 {
-    BINTRAY_USERNAME:BINTRAY_PASSWORD...
-    curl -X POST ${BINTRAY_API_URL}/content/${REPO_URL_FRAGMENT}/:version/publish
+    echo "All is published, hurray!"
+    # SETTINGS_FILE="$CURRENT_DIR/bintray-settings.xml"
+    # BINTRAY_USERNAME:BINTRAY_PASSWORD...
+    # curl -X POST ${BINTRAY_API_URL}/content/${REPO_URL_FRAGMENT}/:version/publish
+    # https://api.bintray.com/content/twilio/releases/rtd-cpp-boost-lib/$VERSION/publish
 }
 
 #===============================================================================
