@@ -142,6 +142,8 @@ commands:
 jobs:
   unpack-sources:
     executor: linux-android-executor
+    steps:
+      - unpack
 
   build-linux:
     executor: linux-android-executor
