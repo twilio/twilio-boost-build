@@ -87,11 +87,8 @@ commands:
 
   unpack:
     description: "Unpack boost tarball"
-    parameters:
-      <<: *pre-steps-parameter
     steps:
       - checkout
-      - steps: << parameters.pre-steps >>
       - generate_build_settings
       - generate_maven_settings
       - run:
@@ -145,9 +142,6 @@ commands:
 jobs:
   unpack-sources:
     executor: linux-android-executor
-    steps:
-      - unpack
-      - persist-workspace
 
   build-linux:
     executor: linux-android-executor
