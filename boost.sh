@@ -672,7 +672,7 @@ EOF
 generateLinuxUserConfig()
 {
     cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
-using gcc : : g++-7 $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
+using gcc : : g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
 : <architecture>x86 <target-os>linux
 ;
 EOF
