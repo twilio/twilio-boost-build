@@ -1038,7 +1038,7 @@ deployFile()
 
     mvn deploy:deploy-file \
         $SETTINGS_FILE \
-        -Durl=$REPO_URL \
+        -Durl="$REPO_URL;publish=1" \
         -DrepositoryId=$REPO_ID \
         -DgroupId=org.boost \
         -DartifactId=$ARTIFACT \
