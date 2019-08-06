@@ -89,7 +89,6 @@ commands:
     description: "Unpack boost tarball"
     parameters:
       <<: *platform-parameter
-      <<: *boost-libs-parameter
       <<: *pre-steps-parameter
     steps:
       - checkout
@@ -206,7 +205,6 @@ workflows:
           name: build-boost-android
           depends:
             - unpack-sources
-
   linux:
     jobs:
       - build-linux:
@@ -214,7 +212,6 @@ workflows:
           name: build-boost-linux
           depends:
             - unpack-sources
-
   ios:
     jobs:
       - build-ios:
@@ -222,7 +219,6 @@ workflows:
           name: build-boost-ios
           depends:
             - unpack-sources
-
   osx:
     jobs:
       - build-osx:
