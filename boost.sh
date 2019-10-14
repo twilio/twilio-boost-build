@@ -1482,12 +1482,14 @@ if [ -n "$CLEAN" ]; then
     exit
 fi
 
-if [ -z $NO_CLEAN ]; then
+if [ -z "$NO_CLEAN" ]; then
     cleanup
 fi
 
-if [ -z $NO_DOWNLOAD ]; then
-    downloadBoost
+if [ -z "$NO_UNPACK" ]; then
+    if [ -z "$NO_DOWNLOAD" ]; then
+        downloadBoost
+    fi
     unpackBoost
     unpackAsynchronous
     inventMissingHeaders
