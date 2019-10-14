@@ -1486,10 +1486,11 @@ if [ -z "$NO_CLEAN" ]; then
     cleanup
 fi
 
-if [ -z "$NO_UNPACK" ]; then
-    if [ -z "$NO_DOWNLOAD" ]; then
-        downloadBoost
-    fi
+if [ -z "$NO_DOWNLOAD" ]; then
+    downloadBoost
+fi
+
+if [ -z "$NO_DOWNLOAD" ] && [ -z "$NO_UNPACK" ]; then
     unpackBoost
     unpackAsynchronous
     inventMissingHeaders
