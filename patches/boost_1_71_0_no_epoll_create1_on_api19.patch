@@ -1,0 +1,28 @@
+From acc075deed54b1178db6d215a2764230b59c11be Mon Sep 17 00:00:00 2001
+From: Dmitry Kalita <dkalita@twillio.com>
+Date: Mon, 14 Oct 2019 16:34:22 +0300
+Subject: [PATCH] Don't use epoll_create1() on android preAPI21
+
+See: 
+https://svn.boost.org/trac10/ticket/12863
+https://github.com/android/ndk/issues/395
+---
+ 1.71.0/boost/asio/detail/impl/epoll_reactor.ipp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/1.71.0/boost/asio/detail/impl/epoll_reactor.ipp b/1.71.0/boost/asio/detail/impl/epoll_reactor.ipp
+index b1e1b39d0..e896ff48e 100644
+--- a/1.71.0/boost/asio/detail/impl/epoll_reactor.ipp
++++ b/1.71.0/boost/asio/detail/impl/epoll_reactor.ipp
+@@ -575,7 +575,7 @@ void epoll_reactor::interrupt()
+ 
+ int epoll_reactor::do_epoll_create()
+ {
+-#if defined(EPOLL_CLOEXEC)
++#if defined(EPOLL_CLOEXEC) && (!defined(__ANDROID_API__ ) || __ANDROID_API__ >= 21)
+   int fd = epoll_create1(EPOLL_CLOEXEC);
+ #else // defined(EPOLL_CLOEXEC)
+   int fd = -1;
+-- 
+2.21.0 (Apple Git-122)
+
