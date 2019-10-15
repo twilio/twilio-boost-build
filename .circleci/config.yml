@@ -13,7 +13,7 @@ aliases:
       platform:
         description: "Platform to build"
         type: enum
-        enum: ["android", "linux", "linux-cxx11-abi-disabled", "ios", "osx"]
+        enum: ["headers", "android", "linux", "linux-cxx11-abi-disabled", "ios", "osx"]
   - boost-libs-parameter: &boost-libs-parameter
       boost-libs:
         description: "List of boost libraries to build"
@@ -145,6 +145,12 @@ jobs:
     steps:
       - unpack
 
+  build-headers:
+    executor: linux-android-executor
+    steps:
+      - build:
+          platform: headers
+
   build-linux:
     executor: linux-android-executor
     steps:
@@ -195,6 +201,11 @@ workflows:
           <<: *only-release-tags
           name: unpack
 
+      - build-headers:
+          <<: *only-release-tags
+          name: build-boost-headers
+          requires:
+            - unpack
       - build-android:
           <<: *only-release-tags
           name: build-boost-android
@@ -220,6 +231,7 @@ workflows:
           <<: *only-release-tags
           name: deploy
           requires:
+            - build-boost-headers
             - build-boost-android
             - build-boost-linux
             - build-boost-ios
