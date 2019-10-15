@@ -569,7 +569,7 @@ using clang : 5.0~x86
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include/i686-linux-android
 <compileflags>-DANDROID
-<compileflags>-D__ANDROID_API__=21
+<compileflags>-D__ANDROID_API__=19
 <compileflags>-ffunction-sections
 <compileflags>-funwind-tables
 <compileflags>-fstack-protector-strong
@@ -623,7 +623,7 @@ using clang : 5.0~arm
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include
 <compileflags>-isystem <compileflags>$ANDROID_NDK_ROOT/sysroot/usr/include/arm-linux-androideabi
 <compileflags>-DANDROID
-<compileflags>-D__ANDROID_API__=16
+<compileflags>-D__ANDROID_API__=19
 <compileflags>-ffunction-sections
 <compileflags>-funwind-tables
 <compileflags>-fstack-protector-strong
