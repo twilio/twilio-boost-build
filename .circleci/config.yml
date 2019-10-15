@@ -157,12 +157,11 @@ jobs:
       - build:
           platform: linux
 
-  # build-linux-cxx11-abi-disabled:
-  #   executor: linux-android-executor
-  #   steps:
-  #     - build:
-  #         platform: linux-cxx11-abi-disabled
-  #         boost-libs: *boost-libraries-list
+  build-linux-cxx11-abi-disabled:
+    executor: linux-android-executor
+    steps:
+      - build:
+          platform: linux-cxx11-abi-disabled
 
   build-android:
     executor: linux-android-executor
@@ -216,6 +215,11 @@ workflows:
           name: build-boost-linux
           requires:
             - unpack
+      - build-linux-cxx11-abi-disabled:
+          <<: *only-release-tags
+          name: build-boost-linux-cxx11-abi-disabled
+          requires:
+            - unpack
       - build-ios:
           <<: *only-release-tags
           name: build-boost-ios
@@ -234,5 +238,6 @@ workflows:
             - build-boost-headers
             - build-boost-android
             - build-boost-linux
+            - build-boost-linux-cxx11-abi-disabled
             - build-boost-ios
             - build-boost-osx
