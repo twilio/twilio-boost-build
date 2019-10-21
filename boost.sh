@@ -28,7 +28,6 @@
 #
 #===============================================================================
 set -x
-
 ALL_BOOST_LIBS="atomic chrono container context coroutine date_time exception filesystem graph graph_parallel iostreams locale log math mpi program_options python random regex serialization signals system test thread timer type_erasure wave"
 BOOST_LIBS="atomic container context coroutine date_time exception iostreams program_options random regex serialization system test thread"
 
@@ -678,6 +677,19 @@ generateLinuxUserConfig()
 using gcc : : g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
 : <architecture>x86 <target-os>linux
 ;
+using gcc : 8.3.0~arm
+: arm-linux-gnueabihf-g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
+:
+<architecture>arm <target-os>linux
+<compileflags>-isystem <compileflags>/usr/include/arm-linux-gnueabihf/
+<compileflags>-fPIC
+<compileflags>-fno-omit-frame-pointer
+<compileflags>-march=armv7-a
+<compileflags>-mfloat-abi=hard
+<compileflags>-mtune=generic-armv7-a
+<compileflags>-mfpu=neon
+<compileflags>-mthumb
+;
 EOF
 }
 
@@ -948,9 +960,10 @@ buildBoost_Linux()
     mkdir -p $OUTPUT_DIR
     echo > ${OUTPUT_DIR}/linux-build.log
 
+    # intel
     for BITS in 64 32; do
         for VARIANT in debug release; do
-            echo Building $VARIANT $BITS-bit Boost for Linux
+            echo Building $VARIANT intel $BITS-bit Boost for Linux
 
             if [[ $BITS == 64 ]]; then
                 LIBDIR_SUFFIX=x86_64
@@ -968,6 +981,29 @@ buildBoost_Linux()
                 install >> "${OUTPUT_DIR}/linux-build.log" 2>&1
             if [ $? != 0 ]; then echo "Error staging Linux. Check ${OUTPUT_DIR}/linux-build.log"; exit 1; fi
         done
+    done
+
+    # arm
+    for VARIANT in debug release; do
+        echo Building $VARIANT arm_gnueabihf Boost for Linux
+
+        LIBDIR_SUFFIX=arm_gnueabihf
+        ARCH=arm
+        TOOLSET=gcc-8.3.0~arm
+        ABI=aapcs
+
+        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=$TOOLSET \
+            --prefix="$OUTPUT_DIR" \
+            --libdir="$OUTPUT_DIR/lib/$VARIANT/$LIBDIR_SUFFIX" \
+            address-model=$BITS variant=$VARIANT \
+            architecture=$ARCH \
+            binary-format=elf \
+            abi=$ABI \
+            optimization=space \
+            cxxflags="${CXX_FLAGS} ${CPPSTD}" \
+            link=static threading=multi \
+            install >> "${OUTPUT_DIR}/linux-build.log" 2>&1
+        if [ $? != 0 ]; then echo "Error staging Linux. Check ${OUTPUT_DIR}/linux-build.log"; exit 1; fi
     done
 
     doneSection
