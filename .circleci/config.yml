@@ -9,6 +9,8 @@ aliases:
       filters:
         tags:
           only: /^release-.*/
+        branches:
+          ignore: /.*/
   - platform-parameter: &platform-parameter
       platform:
         description: "Platform to build"
