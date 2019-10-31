@@ -675,13 +675,21 @@ generateLinuxUserConfig()
 {
     cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
 using gcc : : g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
-: <architecture>x86 <target-os>linux
+:
+<architecture>x86 <target-os>linux
+<compileflags>-ffunction-sections
+<compileflags>-fPIC
+<compileflags>-Wformat
+<compileflags>-Werror=format-security
+<compileflags>-Wall
+<compileflags>-Wshadow
 ;
 using gcc : 8.3.0~arm
 : arm-linux-gnueabihf-g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
 :
 <architecture>arm <target-os>linux
 <compileflags>-isystem <compileflags>/usr/include/arm-linux-gnueabihf/
+<compileflags>-ffunction-sections
 <compileflags>-fPIC
 <compileflags>-fno-omit-frame-pointer
 <compileflags>-march=armv7-a
@@ -689,6 +697,10 @@ using gcc : 8.3.0~arm
 <compileflags>-mtune=generic-armv7-a
 <compileflags>-mfpu=neon
 <compileflags>-mthumb
+<compileflags>-Wformat
+<compileflags>-Werror=format-security
+<compileflags>-Wall
+<compileflags>-Wshadow
 ;
 EOF
 }
