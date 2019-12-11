@@ -11,7 +11,7 @@ diff --git a/1.71.0/boost/msm/back/state_machine.hpp b/1.71.0/boost/msm/back/sta
 @@ -1576,7 +1576,7 @@
       void set_states(Expr const& expr)
       {
-          ::boost::fusion::for_each(
+          ::boost::fusion::for_each( 
 -             ::boost::fusion::as_vector(FoldToList()(expr, boost::fusion::nil())),update_state(this->m_substate_list));
 +             ::boost::fusion::as_vector(FoldToList()(expr, boost::fusion::nil_())),update_state(this->m_substate_list));
       }
