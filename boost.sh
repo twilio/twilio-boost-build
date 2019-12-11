@@ -456,6 +456,12 @@ downloadBoost()
 
 #===============================================================================
 
+applyPatches()
+{
+    echo Applying patches, if any...
+    (cd $BOOST_SRC; cat ${CURRENT_DIR}/patches/boost_${BOOST_VERSION2}*.patch | patch -p2) || echo "Patching failed"
+}
+
 unpackBoost()
 {
     [ -f "$BOOST_TARBALL" ] || abort "Source tarball missing."
@@ -469,12 +475,6 @@ unpackBoost()
     applyPatches
 
     doneSection
-}
-
-applyPatches()
-{
-    echo Applying patches, if any...
-    (cd $BOOST_SRC; cat ${CURRENT_DIR}/patches/boost_${BOOST_VERSION2}*.patch | patch -p2) || echo "Patching failed"
 }
 
 unpackAsynchronous()
