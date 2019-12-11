@@ -466,10 +466,15 @@ unpackBoost()
     [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xfj "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
     echo "    ...unpacked as $BOOST_SRC"
 
-    echo Applying patches, if any...
-    (cd $BOOST_SRC; patch -p2 < $CURRENT_DIR/patches/boost_${BOOST_VERSION2}*.patch) || echo "Patching failed"
+    applyPatches
 
     doneSection
+}
+
+applyPatches()
+{
+    echo Applying patches, if any...
+    (cd $BOOST_SRC; cat ${CURRENT_DIR}/patches/boost_${BOOST_VERSION2}*.patch | patch -p2) || echo "Patching failed"
 }
 
 unpackAsynchronous()
