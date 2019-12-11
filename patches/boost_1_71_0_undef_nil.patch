@@ -1,0 +1,19 @@
+From: Berkus Karchebnyy <berkus@twillio.com>
+Date: Wed, 11 Dec 2019 19:49:11 +0300
+Subject: [PATCH] #undef nil for boost.msm
+
+See:
+https://github.com/boostorg/msm/commit/6adfc03233fec380da38a56963454ca76dc75150
+
+diff --git a/1.71.0/boost/msm/back/state_machine.hpp b/1.71.0/boost/msm/back/state_machine.hpp
+--- a/1.71.0/boost/msm/back/state_machine.hpp
++++ b/1.71.0/boost/msm/back/state_machine.hpp
+@@ -1576,7 +1576,7 @@
+      void set_states(Expr const& expr)
+      {
+          ::boost::fusion::for_each(
+-             ::boost::fusion::as_vector(FoldToList()(expr, boost::fusion::nil())),update_state(this->m_substate_list));
++             ::boost::fusion::as_vector(FoldToList()(expr, boost::fusion::nil_())),update_state(this->m_substate_list));
+      }
+
+      // Construct with the default initial states
