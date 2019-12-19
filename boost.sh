@@ -579,7 +579,6 @@ using clang : 5.0~x86
 <compileflags>-fstack-protector-strong
 <compileflags>-fno-limit-debug-info
 <compileflags>-fPIC
-<compileflags>-flto
 <compileflags>-no-canonical-prefixes
 <compileflags>-mstackrealign
 <compileflags>-Wa,--noexecstack
@@ -607,7 +606,6 @@ using clang : 5.0~x86_64
 <compileflags>-fstack-protector-strong
 <compileflags>-fno-limit-debug-info
 <compileflags>-fPIC
-<compileflags>-flto
 <compileflags>-no-canonical-prefixes
 <compileflags>-mstackrealign
 <compileflags>-Wa,--noexecstack
