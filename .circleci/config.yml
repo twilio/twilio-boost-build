@@ -80,16 +80,25 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v3-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
+            - v4-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Install necessary components through Homebrew"
           command: |
             brew update
             brew install maven
+            brew install boost-bcp
+            brew install rsync
       - save_cache:
-          key: v3-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
+          key: v4-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
           paths:
             - /usr/local/Homebrew
+
+  prepare_linux:
+    description: "apt install"
+    steps:
+      - run:
+          name: apt install
+          command: apt -y --no-install-recommends install libboost-tools-dev rsync
 
   unpack:
     description: "Unpack boost tarball"
@@ -145,31 +154,41 @@ jobs:
   unpack-sources:
     executor: linux-android-executor
     steps:
-      - unpack
+      - unpack:
+          pre-steps:
+            - prepare_linux
 
   build-headers:
     executor: linux-android-executor
     steps:
       - build:
           platform: headers
+          pre-steps:
+            - prepare_linux
 
   build-linux:
     executor: linux-android-executor
     steps:
       - build:
           platform: linux
+          pre-steps:
+            - prepare_linux
 
   build-linux-cxx11-abi-disabled:
     executor: linux-android-executor
     steps:
       - build:
           platform: linux-cxx11-abi-disabled
+          pre-steps:
+            - prepare_linux
 
   build-android:
     executor: linux-android-executor
     steps:
       - build:
           platform: android
+          pre-steps:
+            - prepare_linux
 
   build-osx:
     executor: macos-ios-executor
@@ -192,7 +211,9 @@ jobs:
   deploy-bintray:
     executor: linux-android-executor
     steps:
-      - mark-deployment-complete
+      - mark-deployment-complete:
+          pre-steps:
+            - prepare_linux
 
 workflows:
   version: 2
