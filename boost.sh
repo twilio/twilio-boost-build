@@ -456,6 +456,17 @@ downloadBoost()
 
 #===============================================================================
 
+changeNamespace()
+{
+    local NAMESPACE="boost_${BOOST_VERSION2}"
+    echo Changing boost namespace to "$NAMESPACE"...
+    cd $BOOST_SRC
+    mkdir -p bcp 
+    bcp --namespace=$NAMESPACE --namespace-alias `find boost  -maxdepth 1 | sed 's/^boost\///' | xargs` bcp >/dev/null
+    rsync -a bcp/* .
+    cd -
+}
+
 applyPatches()
 {
     echo Applying patches, if any...
@@ -471,6 +482,8 @@ unpackBoost()
     [ -d $SRCDIR ]    || mkdir -p "$SRCDIR"
     [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xfj "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
     echo "    ...unpacked as $BOOST_SRC"
+
+    changeNamespace
 
     applyPatches
 
