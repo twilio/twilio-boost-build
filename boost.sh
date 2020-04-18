@@ -1065,11 +1065,11 @@ packageLibEntry()
     echo Packaging boost-$NAME...
 
     if [[ -z "$2" ]]; then
-        PATTERN="-name *libboost_${NAME}*"
+        PATTERN="-name *libboost_${BOOST_VERSION2}_${NAME}*"
     else
         PATTERN="-name NOTMATCHED"
         for PAT in $2; do
-            PATTERN="$PATTERN -o -name *libboost_${PAT}*"
+            PATTERN="$PATTERN -o -name *libboost_${BOOST_VERSION2}_${PAT}*"
         done
     fi
 
@@ -1193,7 +1193,7 @@ unpackArchive()
     fi
 
     (
-        cd "$BUILDDIR/$NAME"; ar -x "../../libboost_$NAME.a";
+        cd "$BUILDDIR/$NAME"; ar -x "../../libboost_${BOOST_VERSION2}_$NAME.a";
         for FILE in *.o; do
             NEW_FILE="${NAME}_${FILE}"
             mv "$FILE" "$NEW_FILE"
@@ -1244,36 +1244,36 @@ scrunchAllLibsTogetherInOneLibPerPlatform()
             NAME="unit_test_framework"
         fi
 
-        ALL_LIBS="$ALL_LIBS libboost_$NAME.a"
+        ALL_LIBS="$ALL_LIBS libboost_${BOOST_VERSION2}_$NAME.a"
 
         if [[ -n $BUILD_IOS ]]; then
-            $IOS_ARM_DEV_CMD lipo "iphone-build/stage/lib/libboost_$NAME.a" \
-                -thin armv7 -o "$BUILD_DIR/armv7/libboost_$NAME.a"
-            $IOS_ARM_DEV_CMD lipo "iphone-build/stage/lib/libboost_$NAME.a" \
-                -thin arm64 -o "$BUILD_DIR/arm64/libboost_$NAME.a"
+            $IOS_ARM_DEV_CMD lipo "iphone-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
+                -thin armv7 -o "$BUILD_DIR/armv7/libboost_${BOOST_VERSION2}_$NAME.a"
+            $IOS_ARM_DEV_CMD lipo "iphone-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
+                -thin arm64 -o "$BUILD_DIR/arm64/libboost_${BOOST_VERSION2}_$NAME.a"
 
-            $IOS_SIM_DEV_CMD lipo "iphonesim-build/stage/lib/libboost_$NAME.a" \
-                -thin i386 -o "$BUILD_DIR/i386/libboost_$NAME.a"
-            $IOS_SIM_DEV_CMD lipo "iphonesim-build/stage/lib/libboost_$NAME.a" \
-                -thin x86_64 -o "$BUILD_DIR/x86_64/libboost_$NAME.a"
+            $IOS_SIM_DEV_CMD lipo "iphonesim-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
+                -thin i386 -o "$BUILD_DIR/i386/libboost_${BOOST_VERSION2}_$NAME.a"
+            $IOS_SIM_DEV_CMD lipo "iphonesim-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
+                -thin x86_64 -o "$BUILD_DIR/x86_64/libboost_${BOOST_VERSION2}_$NAME.a"
         fi
 
         if [[ -n $BUILD_TVOS ]]; then
-            $TVOS_ARM_DEV_CMD lipo "appletv-build/stage/lib/libboost_$NAME.a" \
-                -thin arm64 -o "$BUILD_DIR/arm64/libboost_$NAME.a"
+            $TVOS_ARM_DEV_CMD lipo "appletv-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
+                -thin arm64 -o "$BUILD_DIR/arm64/libboost_${BOOST_VERSION2}_$NAME.a"
 
-            $TVOS_SIM_DEV_CMD lipo "appletvsim-build/stage/lib/libboost_$NAME.a" \
-                -thin x86_64 -o "$BUILD_DIR/x86_64/libboost_$NAME.a"
+            $TVOS_SIM_DEV_CMD lipo "appletvsim-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
+                -thin x86_64 -o "$BUILD_DIR/x86_64/libboost_${BOOST_VERSION2}_$NAME.a"
         fi
 
         if [[ -n $BUILD_OSX ]]; then
             if (( $OSX_ARCH_COUNT == 1 )); then
-                cp "osx-build/stage/lib/libboost_$NAME.a" \
-                    "$BUILD_DIR/$ARCH/libboost_$NAME.a"
+                cp "osx-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
+                    "$BUILD_DIR/$ARCH/libboost_${BOOST_VERSION2}_$NAME.a"
             else
                 for ARCH in $OSX_ARCHS; do
-                    $OSX_DEV_CMD lipo "osx-build/stage/lib/libboost_$NAME.a" \
-                        -thin $ARCH -o "$BUILD_DIR/$ARCH/libboost_$NAME.a"
+                    $OSX_DEV_CMD lipo "osx-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
+                        -thin $ARCH -o "$BUILD_DIR/$ARCH/libboost_${BOOST_VERSION2}_$NAME.a"
                 done
             fi
         fi
@@ -1286,7 +1286,7 @@ scrunchAllLibsTogetherInOneLibPerPlatform()
             NAME="unit_test_framework"
         fi
 
-        echo "Decomposing libboost_${NAME}.a"
+        echo "Decomposing libboost_${BOOST_VERSION2}_${NAME}.a"
         if [[ -n $BUILD_IOS ]]; then
             unpackArchive "$BUILD_DIR/armv7/obj" $NAME
             unpackArchive "$BUILD_DIR/arm64/obj" $NAME
@@ -1306,18 +1306,18 @@ scrunchAllLibsTogetherInOneLibPerPlatform()
         fi
     done
 
-    echo "Linking each architecture into an uberlib ($ALL_LIBS => libboost.a )"
+    echo "Linking each architecture into an uberlib ($ALL_LIBS => libboost_${BOOST_VERSION2}.a )"
     if [[ -n $BUILD_IOS ]]; then
         cd "$BUILD_DIR"
-        rm */libboost.a
+        rm */libboost_${BOOST_VERSION2}.a
     fi
     if [[ -n $BUILD_TVOS ]]; then
         cd "$BUILD_DIR"
-        rm */libboost.a
+        rm */libboost_${BOOST_VERSION2}.a
     fi
     if [[ -n $BUILD_OSX ]]; then
         for ARCH in $OSX_ARCHS; do
-            rm "$BUILD_DIR/$ARCH/libboost.a"
+            rm "$BUILD_DIR/$ARCH/libboost_${BOOST_VERSION2}.a"
         done
     fi
 
@@ -1333,27 +1333,27 @@ scrunchAllLibsTogetherInOneLibPerPlatform()
 
         if [[ -n $BUILD_IOS ]]; then
             echo ...armv7
-            (cd "$BUILD_DIR/armv7"; $IOS_ARM_DEV_CMD ar crus libboost.a obj/$NAME/*.o; )
+            (cd "$BUILD_DIR/armv7"; $IOS_ARM_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
             echo ...arm64
-            (cd "$BUILD_DIR/arm64"; $IOS_ARM_DEV_CMD ar crus libboost.a obj/$NAME/*.o; )
+            (cd "$BUILD_DIR/arm64"; $IOS_ARM_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
 
             echo ...i386
-            (cd "$BUILD_DIR/i386";  $IOS_SIM_DEV_CMD ar crus libboost.a obj/$NAME/*.o; )
+            (cd "$BUILD_DIR/i386";  $IOS_SIM_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
             echo ...x86_64
-            (cd "$BUILD_DIR/x86_64";  $IOS_SIM_DEV_CMD ar crus libboost.a obj/$NAME/*.o; )
+            (cd "$BUILD_DIR/x86_64";  $IOS_SIM_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
         fi
 
         if [[ -n $BUILD_TVOS ]]; then
             echo ...tvOS-arm64
-            (cd "$BUILD_DIR/arm64"; $TVOS_ARM_DEV_CMD ar crus libboost.a obj/$NAME/*.o; )
+            (cd "$BUILD_DIR/arm64"; $TVOS_ARM_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
             echo ...tvOS-x86_64
-            (cd "$BUILD_DIR/x86_64";  $TVOS_SIM_DEV_CMD ar crus libboost.a obj/$NAME/*.o; )
+            (cd "$BUILD_DIR/x86_64";  $TVOS_SIM_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
         fi
 
         if [[ -n $BUILD_OSX ]]; then
             for ARCH in $OSX_ARCHS; do
                 echo ...osx-$ARCH
-                (cd "$BUILD_DIR/$ARCH";  $OSX_DEV_CMD ar crus libboost.a obj/$NAME/*.o; )
+                (cd "$BUILD_DIR/$ARCH";  $OSX_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
             done
         fi
     done
@@ -1397,13 +1397,13 @@ buildFramework()
     echo "Lipoing library into $FRAMEWORK_INSTALL_NAME..."
     cd "$BUILDDIR"
     if [[ -n $BUILD_IOS ]]; then
-        $IOS_ARM_DEV_CMD lipo -create */libboost.a -o "$FRAMEWORK_INSTALL_NAME" || abort "Lipo $1 failed"
+        $IOS_ARM_DEV_CMD lipo -create */libboost_${BOOST_VERSION2}.a -o "$FRAMEWORK_INSTALL_NAME" || abort "Lipo $1 failed"
     fi
     if [[ -n $BUILD_TVOS ]]; then
-        $TVOS_ARM_DEV_CMD lipo -create */libboost.a -o "$FRAMEWORK_INSTALL_NAME" || abort "Lipo $1 failed"
+        $TVOS_ARM_DEV_CMD lipo -create */libboost_${BOOST_VERSION2}.a -o "$FRAMEWORK_INSTALL_NAME" || abort "Lipo $1 failed"
     fi
     if [[ -n $BUILD_OSX ]]; then
-        $OSX_DEV_CMD lipo -create */libboost.a -o "$FRAMEWORK_INSTALL_NAME" || abort "Lipo $1 failed"
+        $OSX_DEV_CMD lipo -create */libboost_${BOOST_VERSION2}.a -o "$FRAMEWORK_INSTALL_NAME" || abort "Lipo $1 failed"
     fi
 
     echo "Framework: Copying includes..."
