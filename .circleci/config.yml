@@ -183,7 +183,7 @@ jobs:
           platform: osx
           pre-steps:
             - prepare_macos_ios:
-                cache-tag: xcode10
+                cache-tag: xcode11
 
   build-ios:
     executor: macos-ios-executor
@@ -192,7 +192,7 @@ jobs:
           platform: ios
           pre-steps:
             - prepare_macos_ios:
-                cache-tag: xcode10
+                cache-tag: xcode11
 
   deploy-bintray:
     executor: linux-android-executor
