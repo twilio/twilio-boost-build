@@ -149,7 +149,9 @@ jobs:
     steps:
       - run:
           name: apt install
-          command: apt -y --no-install-recommends install libboost-tools-dev rsync
+          command: |
+              apt -y update
+              apt -y --no-install-recommends install libboost-tools-dev rsync
       - unpack
 
   build-headers:
