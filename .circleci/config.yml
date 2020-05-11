@@ -39,7 +39,7 @@ aliases:
 executors:
   linux-android-executor:
     docker:
-      - image: cibuilderbot/docker-circleci-linux-android
+      - image: twilio/twilio-video-sdk-toolchain:13
     resource_class: xlarge
     working_directory: *workspace
     environment:
