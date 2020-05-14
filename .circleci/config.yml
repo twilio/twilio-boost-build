@@ -37,9 +37,16 @@ aliases:
         type: steps
 
 executors:
-  linux-android-executor:
+  linux-executor:
     docker:
       - image: cibuilderbot/docker-circleci-linux-android
+    resource_class: xlarge
+    working_directory: *workspace
+    environment:
+      CMAKE_BUILD_PARALLEL_LEVEL: 2
+  android-executor:
+    docker:
+      - image: twilio/twilio-video-sdk-toolchain:13
     resource_class: xlarge
     working_directory: *workspace
     environment:
@@ -145,7 +152,7 @@ commands:
 
 jobs:
   unpack-sources:
-    executor: linux-android-executor
+    executor: linux-executor
     steps:
       - run:
           name: apt install
@@ -153,25 +160,25 @@ jobs:
       - unpack
 
   build-headers:
-    executor: linux-android-executor
+    executor: linux-executor
     steps:
       - build:
           platform: headers
 
   build-linux:
-    executor: linux-android-executor
+    executor: linux-executor
     steps:
       - build:
           platform: linux
 
   build-linux-cxx11-abi-disabled:
-    executor: linux-android-executor
+    executor: linux-executor
     steps:
       - build:
           platform: linux-cxx11-abi-disabled
 
   build-android:
-    executor: linux-android-executor
+    executor: android-executor
     steps:
       - build:
           platform: android
@@ -195,7 +202,7 @@ jobs:
                 cache-tag: xcode11
 
   deploy-bintray:
-    executor: linux-android-executor
+    executor: linux-executor
     steps:
       - mark-deployment-complete
 
