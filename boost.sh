@@ -1055,6 +1055,20 @@ packageHeaders()
 
 #===============================================================================
 
+renameArchives()
+{
+    echo Renaming boost archives...
+
+    {
+        cd $OUTPUT_DIR;
+        find lib -type f libboost_${BOOST_VERSION2}*.a | while read archive; do
+            mv -v $archive ${archive/${BOOST_VERSION2}/};
+        done;
+    }
+}
+
+#===============================================================================
+
 packageLibEntry()
 {
     BUILDDIR="$CURRENT_DIR/target/distributions"
@@ -1065,11 +1079,11 @@ packageLibEntry()
     echo Packaging boost-$NAME...
 
     if [[ -z "$2" ]]; then
-        PATTERN="-name *libboost_${BOOST_VERSION2}_${NAME}*"
+        PATTERN="-name libboost_${BOOST_VERSION2}_${NAME}*.a"
     else
         PATTERN="-name NOTMATCHED"
         for PAT in $2; do
-            PATTERN="$PATTERN -o -name *libboost_${BOOST_VERSION2}_${PAT}*"
+            PATTERN="$PATTERN -o -name libboost_${BOOST_VERSION2}_${PAT}*.a"
         done
     fi
 
@@ -1607,6 +1621,7 @@ if [[ -n "$BUILD_HEADERS" ]]; then
 fi
 
 if [[ -z $NO_PACKAGE_LIBS ]]; then
+    renameArchives
     packageLibSet
 fi
 
