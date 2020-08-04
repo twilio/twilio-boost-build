@@ -211,40 +211,31 @@ workflows:
   build-and-deploy:
     jobs:
       - unpack-sources:
-          <<: *only-release-tags
           name: unpack
-
       - build-headers:
-          <<: *only-release-tags
           name: build-boost-headers
           requires:
             - unpack
       - build-android:
-          <<: *only-release-tags
           name: build-boost-android
           requires:
             - unpack
       - build-linux:
-          <<: *only-release-tags
           name: build-boost-linux
           requires:
             - unpack
       - build-linux-cxx11-abi-disabled:
-          <<: *only-release-tags
           name: build-boost-linux-cxx11-abi-disabled
           requires:
             - unpack
       - build-ios:
-          <<: *only-release-tags
           name: build-boost-ios
           requires:
             - unpack
       - build-osx:
-          <<: *only-release-tags
           name: build-boost-osx
           requires:
             - unpack
-
       - deploy-bintray:
           <<: *only-release-tags
           name: deploy
