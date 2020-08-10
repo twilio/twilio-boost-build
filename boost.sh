@@ -46,9 +46,6 @@ NO_PACKAGE_LIBS=
 NO_UNPACK=
 MARK_DEPLOYED_ONLY=
 
-BOOST_VERSION=1.69.0
-BOOST_VERSION2=1_69_0
-
 ASYNC_COMMIT=94fe4433287df569ce1aa384b248793552980711
 
 TWILIO_SUFFIX=
@@ -1454,6 +1451,14 @@ EOF
 #===============================================================================
 
 parseArgs "$@"
+
+if [[ -z $BOOST_VERSION ]]; then
+    BOOST_VERSION=`curl -s 'https://www.boost.org' | sed -n 's/.*https:\/\/dl\.bintray\.com\/boostorg\/release\/\([^\/]*\)\/.*$/\1/p'`
+    echo "Detecting the latest boost version from https://www.boost.org to be version $BOOST_VERSION"
+    BOOST_VERSION2="${BOOST_VERSION//./_}"
+    BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
+    BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
+fi
 
 if [[ -z $UNPACK && -z $BUILD_IOS && -z $BUILD_TVOS && -z $BUILD_OSX && -z $BUILD_ANDROID && -z $BUILD_LINUX && -z $BUILD_HEADERS ]]; then
     BUILD_ANDROID=1

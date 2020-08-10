@@ -66,10 +66,10 @@ commands:
           command: |
             if [ -z "$CIRCLE_TAG" ]; then
               echo "Must use release tag to build boost releases. Push \`release-1.71.0-twilio3\`-style tag to trigger."
-              exit 1
+            else
+              echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
+              echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
             fi
-            echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
-            echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
 
   generate_maven_settings:
     description: "Generate Maven settings"
@@ -110,7 +110,8 @@ commands:
           name: Unpack tarball
           command: |
             source $BASH_ENV
-            ./boost.sh --unpack --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
+            ./boost.sh --unpack `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
+              `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX`
           no_output_timeout: 120m
       - persist_to_workspace:
           root: .
@@ -134,7 +135,8 @@ commands:
           name: Build << parameters.platform >>
           command: |
             source $BASH_ENV
-            ./boost.sh -<< parameters.platform >> --no-clean --no-unpack --no-framework --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX --boost-libs "<< parameters.boost-libs >>"
+            ./boost.sh -<< parameters.platform >> --no-clean --no-unpack --no-framework `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
+              `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< parameters.boost-libs >>"
           no_output_timeout: 120m
 
   mark-deployment-complete:
@@ -147,7 +149,8 @@ commands:
           name: Mark all platforms deployed
           command: |
             source $BASH_ENV
-            ./boost.sh --mark-bintray-deployed --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
+            ./boost.sh --mark-bintray-deployed `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
+              `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX`
           no_output_timeout: 120m
 
 jobs:
