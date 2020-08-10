@@ -1137,32 +1137,6 @@ deployPlat()
     done
 }
 
-deployToNexus()
-{
-    BUILDDIR="$CURRENT_DIR/target/distributions"
-
-    if [[ -n "$BUILD_HEADERS" ]]; then
-        deployFile boost-headers "${BUILDDIR}/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
-    fi
-
-    if [[ -n "$BUILD_ANDROID" ]]; then
-        deployPlat "android" "$BUILDDIR"
-    fi
-    if [[ -n "$BUILD_IOS" ]]; then
-        deployPlat "ios" "$BUILDDIR"
-    fi
-    if [[ -n "$BUILD_OSX" ]]; then
-        deployPlat "osx" "$BUILDDIR"
-    fi
-    if [[ -n "$BUILD_LINUX" ]]; then
-        if [[ "$USE_CXX11_ABI" == 0 ]]; then
-            deployPlat "linux-cxx11-abi-disabled" "$BUILDDIR"
-        else
-            deployPlat "linux" "$BUILDDIR"
-        fi
-    fi
-}
-
 deployToBintray()
 {
     if [[ -z "$REPO_ID" ]]; then
@@ -1170,11 +1144,13 @@ deployToBintray()
     fi
 
     BUILDDIR="$CURRENT_DIR/target/distributions"
-    SETTINGS_FILE="$CURRENT_DIR/bintray-settings.xml"
-
     SETTINGS_FILE="-s $SETTINGS_FILE"
-
-    deployToNexus
+    deployFile boost-headers "${BUILDDIR}/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
+    deployPlat "android" "$BUILDDIR"
+    deployPlat "ios" "$BUILDDIR"
+    deployPlat "osx" "$BUILDDIR"
+    deployPlat "linux-cxx11-abi-disabled" "$BUILDDIR"
+    deployPlat "linux" "$BUILDDIR"
 }
 
 #===============================================================================
@@ -1451,16 +1427,7 @@ if [[ -z $BOOST_VERSION ]]; then
     BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
 fi
 
-if [[ -z $UNPACK && -z $BUILD_IOS && -z $BUILD_TVOS && -z $BUILD_OSX && -z $BUILD_ANDROID && -z $BUILD_LINUX && -z $BUILD_HEADERS ]]; then
-    BUILD_ANDROID=1
-    BUILD_IOS=1
-    BUILD_TVOS=1
-    BUILD_OSX=1
-    BUILD_LINUX=1
-    BUILD_HEADERS=1
-fi
-
-if [[ -n $UNPACK ]]; then
+if [[ -n $UNPACK || -n $DEPLOY ]]; then
     NO_DOWNLOAD=
     BUILD_ANDROID=
     BUILD_IOS=
@@ -1468,6 +1435,13 @@ if [[ -n $UNPACK ]]; then
     BUILD_OSX=
     BUILD_LINUX=
     BUILD_HEADERS=
+elif [[ -z $BUILD_IOS && -z $BUILD_TVOS && -z $BUILD_OSX && -z $BUILD_ANDROID && -z $BUILD_LINUX && -z $BUILD_HEADERS ]]; then
+    BUILD_ANDROID=1
+    BUILD_IOS=1
+    BUILD_TVOS=1
+    BUILD_OSX=1
+    BUILD_LINUX=1
+    BUILD_HEADERS=1
 fi
 
 # The EXTRA_FLAGS definition works around a thread race issue in
