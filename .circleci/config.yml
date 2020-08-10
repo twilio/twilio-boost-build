@@ -185,6 +185,8 @@ jobs:
   deploy-bintray:
     executor: linux-executor
     description: "Deploy binaries to bintray"
+    parameters:
+      <<: *boost-libs-parameter
     steps:
       - checkout
       - generate_build_settings
