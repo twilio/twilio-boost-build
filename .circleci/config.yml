@@ -210,7 +210,6 @@ jobs:
 workflows:
   version: 2
   build-and-deploy:
-    when: << pipeline.parameters.examine-code-changes >>
     jobs:
       - unpack-sources:
           <<: *ignore-master
