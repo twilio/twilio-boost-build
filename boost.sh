@@ -1059,7 +1059,7 @@ renameArchives()
     {
         cd $OUTPUT_DIR;
         find lib -type f -name libboost_${BOOST_VERSION2}*.a | while read archive; do
-            mv -v $archive ${archive/${BOOST_VERSION2}/};
+            mv -v $archive ${archive/${BOOST_VERSION2}_/};
         done;
     }
 }
@@ -1076,11 +1076,11 @@ packageLibEntry()
     echo Packaging boost-$NAME...
 
     if [[ -z "$2" ]]; then
-        PATTERN="-name libboost_${BOOST_VERSION2}_${NAME}*.a"
+        PATTERN="-name libboost_${NAME}*.a"
     else
         PATTERN="-name NOTMATCHED"
         for PAT in $2; do
-            PATTERN="$PATTERN -o -name libboost_${BOOST_VERSION2}_${PAT}*.a"
+            PATTERN="$PATTERN -o -name libboost_${PAT}*.a"
         done
     fi
 
