@@ -5,6 +5,12 @@ aliases:
     ~/twilio-boost-build
   - &build_output
     ~/twilio-boost-build/target/output
+  - ignore-master: &ignore-master
+      filters:
+        tags:
+          only: /.*/
+        branches:
+          ignore: /^master/
   - only-release-tags: &only-release-tags
       filters:
         tags:
@@ -53,7 +59,7 @@ executors:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
   macos-ios-executor:
     macos:
-      xcode: "11.0"
+      xcode: "10.1.0"
     resource_class: large
     working_directory: *workspace
 
@@ -204,30 +210,38 @@ jobs:
 workflows:
   version: 2
   build-and-deploy:
+    when: << pipeline.parameters.examine-code-changes >>
     jobs:
       - unpack-sources:
+          <<: *ignore-master
           name: unpack
       - build-headers:
+          <<: *ignore-master
           name: build-boost-headers
           requires:
             - unpack
       - build-android:
+          <<: *ignore-master
           name: build-boost-android
           requires:
             - unpack
       - build-linux:
+          <<: *ignore-master
           name: build-boost-linux
           requires:
             - unpack
       - build-linux-cxx11-abi-disabled:
+          <<: *ignore-master
           name: build-boost-linux-cxx11-abi-disabled
           requires:
             - unpack
       - build-ios:
+          <<: *ignore-master
           name: build-boost-ios
           requires:
             - unpack
       - build-osx:
+          <<: *ignore-master
           name: build-boost-osx
           requires:
             - unpack
