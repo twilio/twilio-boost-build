@@ -1058,7 +1058,7 @@ renameArchives()
 
     {
         cd $OUTPUT_DIR;
-        find lib -type f libboost_${BOOST_VERSION2}*.a | while read archive; do
+        find lib -type f -name libboost_${BOOST_VERSION2}*.a | while read archive; do
             mv -v $archive ${archive/${BOOST_VERSION2}/};
         done;
     }
