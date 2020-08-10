@@ -44,7 +44,7 @@ NO_FRAMEWORK=
 USE_CXX11_ABI=
 NO_PACKAGE_LIBS=
 NO_UNPACK=
-MARK_DEPLOYED_ONLY=
+DEPLOY=
 
 ASYNC_COMMIT=94fe4433287df569ce1aa384b248793552980711
 
@@ -353,8 +353,8 @@ parseArgs()
                 NO_UNPACK=1
                 ;;
 
-            --mark-bintray-deployed)
-                MARK_DEPLOYED_ONLY=1
+            --deploy)
+                DEPLOY=1
                 ;;
 
             *)
@@ -1177,15 +1177,6 @@ deployToBintray()
     deployToNexus
 }
 
-markBintrayDeployed()
-{
-    echo "All is published, hurray!"
-    # SETTINGS_FILE="$CURRENT_DIR/bintray-settings.xml"
-    # BINTRAY_USERNAME:BINTRAY_PASSWORD...
-    # curl -X POST ${BINTRAY_API_URL}/content/${REPO_URL_FRAGMENT}/:version/publish
-    # https://api.bintray.com/content/twilio/releases/rtd-cpp-boost-lib/$VERSION/publish
-}
-
 #===============================================================================
 
 unpackArchive()
@@ -1479,21 +1470,6 @@ if [[ -n $UNPACK ]]; then
     BUILD_HEADERS=
 fi
 
-if [[ -n $MARK_DEPLOYED_ONLY ]]; then
-    CLEAN=
-    NO_CLEAN=1
-    UNPACK=
-    NO_DOWNLOAD=1
-    BUILD_ANDROID=
-    BUILD_IOS=
-    BUILD_TVOS=
-    BUILD_OSX=
-    BUILD_LINUX=
-    BUILD_HEADERS=
-    NO_FRAMEWORK=1
-    NO_PACKAGE_LIBS=1
-fi
-
 # The EXTRA_FLAGS definition works around a thread race issue in
 # shared_ptr. I encountered this historically and have not verified that
 # the fix is no longer required. Without using the posix thread primitives
@@ -1630,10 +1606,8 @@ if [[ -z $NO_PACKAGE_LIBS ]]; then
     packageLibSet
 fi
 
-if [[ -z $MARK_DEPLOYED_ONLY ]]; then
+if [[ -n "$DEPLOY" ]]; then
     deployToBintray
-else
-    markBintrayDeployed
 fi
 
 echo "Completed successfully"
