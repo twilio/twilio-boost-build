@@ -136,6 +136,10 @@ commands:
             ./boost.sh -<< parameters.platform >> --no-clean --no-unpack --no-framework `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
               `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< parameters.boost-libs >>"
           no_output_timeout: 120m
+      - persist_to_workspace:
+          root: .
+          paths:
+            - target/*
 
 jobs:
   unpack-sources:
@@ -195,6 +199,8 @@ jobs:
       <<: *boost-libs-parameter
     steps:
       - checkout
+      - attach_workspace:
+          at: *workspace
       - generate_build_settings
       - run: #generate_maven_settings
           name: Generate Maven settings
@@ -203,7 +209,7 @@ jobs:
           name: Deploy binaries to bintray
           command: |
             source $BASH_ENV
-            ./boost.sh --deploy `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
+            ./boost.sh --no-clean --no-unpack --no-framework --deploy `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
               `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< parameters.boost-libs >>"
           no_output_timeout: 120m
 

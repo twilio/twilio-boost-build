@@ -42,7 +42,6 @@ CLEAN=
 NO_CLEAN=
 NO_FRAMEWORK=
 USE_CXX11_ABI=
-NO_PACKAGE_LIBS=
 NO_UNPACK=
 DEPLOY=
 
@@ -104,7 +103,6 @@ The -ios, -tvos, and -osx options may be specified together.
 Examples:
     ./boost.sh -ios -tvos --boost-version 1.56.0
     ./boost.sh -osx --no-framework
-    ./boost.sh --clean
 
 OPTIONS:
     -h | --help
@@ -141,7 +139,7 @@ OPTIONS:
     --no-unpack
         Do not download or unpack anything. Use local unpacked copy.
 
-    --mark-bintray-deployed
+    --deploy
         Only send request to bintray to mark packages published. Do nothing else.
 
     --boost-version [num]
@@ -178,10 +176,6 @@ OPTIONS:
 
     --no-framework
         Do not create the framework.
-
-    --clean
-        Just clean up build artifacts, but dont actually build anything.
-        (all other parameters are ignored)
 
     --no-clean
         Do not clean up existing build artifacts before building.
@@ -329,10 +323,6 @@ parseArgs()
                 else
                     missingParameter $1
                 fi
-                ;;
-
-            --clean)
-                CLEAN=1
                 ;;
 
             --no-clean)
@@ -1427,8 +1417,7 @@ if [[ -z $BOOST_VERSION ]]; then
     BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
 fi
 
-if [[ -n $UNPACK || -n $DEPLOY ]]; then
-    NO_DOWNLOAD=
+if [[ -n "$UNPACK" || -n "$DEPLOY" ]]; then
     BUILD_ANDROID=
     BUILD_IOS=
     BUILD_TVOS=
@@ -1512,20 +1501,12 @@ printf "$format" "  FRAMEWORK_DIR:" "$FRAMEWORK_DIR"
 printf "$format" "  XCODE_ROOT:" "$XCODE_ROOT"
 echo
 
-if [ -n "$CLEAN" ]; then
-    cleanup
-    exit
-fi
-
 if [ -z "$NO_CLEAN" ]; then
     cleanup
 fi
 
-if [ -z "$NO_DOWNLOAD" ]; then
+if [ -z "$NO_UNPACK" ]; then
     downloadBoost
-fi
-
-if [ -z "$NO_DOWNLOAD" ] && [ -z "$NO_UNPACK" ]; then
     unpackBoost
     unpackAsynchronous
     inventMissingHeaders
@@ -1533,10 +1514,10 @@ fi
 
 if [ -n "$UNPACK" ]; then
     exit
+elif [[ -n $BUILD_IOS || -n $BUILD_TVOS || -n $BUILD_OSX || -n $BUILD_ANDROID || -n $BUILD_LINUX ]]; then
+    updateBoost "$BOOST_PLATFORM_NAME"
+    bootstrapBoost "$BOOST_PLATFORM_NAME"
 fi
-
-updateBoost "$BOOST_PLATFORM_NAME"
-bootstrapBoost "$BOOST_PLATFORM_NAME"
 
 if [[ -n $BUILD_ANDROID ]]; then
     buildBoost_Android
@@ -1575,7 +1556,8 @@ if [[ -n "$BUILD_HEADERS" ]]; then
     packageHeaders
 fi
 
-if [[ -z $NO_PACKAGE_LIBS ]]; then
+if [[ -n $BUILD_IOS || -n $BUILD_TVOS || -n $BUILD_OSX || -n $BUILD_ANDROID \
+    || -n $BUILD_LINUX || -n $BUILD_HEADERS ]]; then
     renameArchives
     packageLibSet
 fi
