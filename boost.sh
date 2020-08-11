@@ -1134,7 +1134,7 @@ deployToBintray()
     fi
 
     BUILDDIR="$CURRENT_DIR/target/distributions"
-    SETTINGS_FILE="-s $SETTINGS_FILE"
+    SETTINGS_FILE="-s $CURRENT_DIR/bintray-settings.xml"
     deployFile boost-headers "${BUILDDIR}/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
     deployPlat "android" "$BUILDDIR"
     deployPlat "ios" "$BUILDDIR"
