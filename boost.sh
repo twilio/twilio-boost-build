@@ -42,12 +42,8 @@ CLEAN=
 NO_CLEAN=
 NO_FRAMEWORK=
 USE_CXX11_ABI=
-NO_PACKAGE_LIBS=
 NO_UNPACK=
-MARK_DEPLOYED_ONLY=
-
-BOOST_VERSION=1.69.0
-BOOST_VERSION2=1_69_0
+DEPLOY=
 
 ASYNC_COMMIT=94fe4433287df569ce1aa384b248793552980711
 
@@ -107,7 +103,6 @@ The -ios, -tvos, and -osx options may be specified together.
 Examples:
     ./boost.sh -ios -tvos --boost-version 1.56.0
     ./boost.sh -osx --no-framework
-    ./boost.sh --clean
 
 OPTIONS:
     -h | --help
@@ -144,7 +139,7 @@ OPTIONS:
     --no-unpack
         Do not download or unpack anything. Use local unpacked copy.
 
-    --mark-bintray-deployed
+    --deploy
         Only send request to bintray to mark packages published. Do nothing else.
 
     --boost-version [num]
@@ -181,10 +176,6 @@ OPTIONS:
 
     --no-framework
         Do not create the framework.
-
-    --clean
-        Just clean up build artifacts, but dont actually build anything.
-        (all other parameters are ignored)
 
     --no-clean
         Do not clean up existing build artifacts before building.
@@ -334,10 +325,6 @@ parseArgs()
                 fi
                 ;;
 
-            --clean)
-                CLEAN=1
-                ;;
-
             --no-clean)
                 NO_CLEAN=1
                 ;;
@@ -356,8 +343,8 @@ parseArgs()
                 NO_UNPACK=1
                 ;;
 
-            --mark-bintray-deployed)
-                MARK_DEPLOYED_ONLY=1
+            --deploy)
+                DEPLOY=1
                 ;;
 
             *)
@@ -1055,6 +1042,20 @@ packageHeaders()
 
 #===============================================================================
 
+renameArchives()
+{
+    echo Renaming boost archives...
+
+    {
+        cd $OUTPUT_DIR;
+        find lib -type f -name libboost_${BOOST_VERSION2}*.a | while read archive; do
+            mv -v $archive ${archive/${BOOST_VERSION2}_/};
+        done;
+    }
+}
+
+#===============================================================================
+
 packageLibEntry()
 {
     BUILDDIR="$CURRENT_DIR/target/distributions"
@@ -1065,11 +1066,11 @@ packageLibEntry()
     echo Packaging boost-$NAME...
 
     if [[ -z "$2" ]]; then
-        PATTERN="-name *libboost_${BOOST_VERSION2}_${NAME}*"
+        PATTERN="-name libboost_${NAME}*.a"
     else
         PATTERN="-name NOTMATCHED"
         for PAT in $2; do
-            PATTERN="$PATTERN -o -name *libboost_${BOOST_VERSION2}_${PAT}*"
+            PATTERN="$PATTERN -o -name libboost_${PAT}*.a"
         done
     fi
 
@@ -1126,32 +1127,6 @@ deployPlat()
     done
 }
 
-deployToNexus()
-{
-    BUILDDIR="$CURRENT_DIR/target/distributions"
-
-    if [[ -n "$BUILD_HEADERS" ]]; then
-        deployFile boost-headers "${BUILDDIR}/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
-    fi
-
-    if [[ -n "$BUILD_ANDROID" ]]; then
-        deployPlat "android" "$BUILDDIR"
-    fi
-    if [[ -n "$BUILD_IOS" ]]; then
-        deployPlat "ios" "$BUILDDIR"
-    fi
-    if [[ -n "$BUILD_OSX" ]]; then
-        deployPlat "osx" "$BUILDDIR"
-    fi
-    if [[ -n "$BUILD_LINUX" ]]; then
-        if [[ "$USE_CXX11_ABI" == 0 ]]; then
-            deployPlat "linux-cxx11-abi-disabled" "$BUILDDIR"
-        else
-            deployPlat "linux" "$BUILDDIR"
-        fi
-    fi
-}
-
 deployToBintray()
 {
     if [[ -z "$REPO_ID" ]]; then
@@ -1159,20 +1134,13 @@ deployToBintray()
     fi
 
     BUILDDIR="$CURRENT_DIR/target/distributions"
-    SETTINGS_FILE="$CURRENT_DIR/bintray-settings.xml"
-
-    SETTINGS_FILE="-s $SETTINGS_FILE"
-
-    deployToNexus
-}
-
-markBintrayDeployed()
-{
-    echo "All is published, hurray!"
-    # SETTINGS_FILE="$CURRENT_DIR/bintray-settings.xml"
-    # BINTRAY_USERNAME:BINTRAY_PASSWORD...
-    # curl -X POST ${BINTRAY_API_URL}/content/${REPO_URL_FRAGMENT}/:version/publish
-    # https://api.bintray.com/content/twilio/releases/rtd-cpp-boost-lib/$VERSION/publish
+    SETTINGS_FILE="-s $CURRENT_DIR/bintray-settings.xml"
+    deployFile boost-headers "${BUILDDIR}/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
+    deployPlat "android" "$BUILDDIR"
+    deployPlat "ios" "$BUILDDIR"
+    deployPlat "osx" "$BUILDDIR"
+    deployPlat "linux-cxx11-abi-disabled" "$BUILDDIR"
+    deployPlat "linux" "$BUILDDIR"
 }
 
 #===============================================================================
@@ -1441,38 +1409,28 @@ EOF
 
 parseArgs "$@"
 
-if [[ -z $UNPACK && -z $BUILD_IOS && -z $BUILD_TVOS && -z $BUILD_OSX && -z $BUILD_ANDROID && -z $BUILD_LINUX && -z $BUILD_HEADERS ]]; then
+if [[ -z $BOOST_VERSION ]]; then
+    BOOST_VERSION=`curl -s 'https://www.boost.org' | sed -n 's/.*https:\/\/dl\.bintray\.com\/boostorg\/release\/\([^\/]*\)\/.*$/\1/p'`
+    echo "Detecting the latest boost version from https://www.boost.org to be version $BOOST_VERSION"
+    BOOST_VERSION2="${BOOST_VERSION//./_}"
+    BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
+    BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
+fi
+
+if [[ -n "$UNPACK" || -n "$DEPLOY" ]]; then
+    BUILD_ANDROID=
+    BUILD_IOS=
+    BUILD_TVOS=
+    BUILD_OSX=
+    BUILD_LINUX=
+    BUILD_HEADERS=
+elif [[ -z $BUILD_IOS && -z $BUILD_TVOS && -z $BUILD_OSX && -z $BUILD_ANDROID && -z $BUILD_LINUX && -z $BUILD_HEADERS ]]; then
     BUILD_ANDROID=1
     BUILD_IOS=1
     BUILD_TVOS=1
     BUILD_OSX=1
     BUILD_LINUX=1
     BUILD_HEADERS=1
-fi
-
-if [[ -n $UNPACK ]]; then
-    NO_DOWNLOAD=
-    BUILD_ANDROID=
-    BUILD_IOS=
-    BUILD_TVOS=
-    BUILD_OSX=
-    BUILD_LINUX=
-    BUILD_HEADERS=
-fi
-
-if [[ -n $MARK_DEPLOYED_ONLY ]]; then
-    CLEAN=
-    NO_CLEAN=1
-    UNPACK=
-    NO_DOWNLOAD=1
-    BUILD_ANDROID=
-    BUILD_IOS=
-    BUILD_TVOS=
-    BUILD_OSX=
-    BUILD_LINUX=
-    BUILD_HEADERS=
-    NO_FRAMEWORK=1
-    NO_PACKAGE_LIBS=1
 fi
 
 # The EXTRA_FLAGS definition works around a thread race issue in
@@ -1543,20 +1501,12 @@ printf "$format" "  FRAMEWORK_DIR:" "$FRAMEWORK_DIR"
 printf "$format" "  XCODE_ROOT:" "$XCODE_ROOT"
 echo
 
-if [ -n "$CLEAN" ]; then
-    cleanup
-    exit
-fi
-
 if [ -z "$NO_CLEAN" ]; then
     cleanup
 fi
 
-if [ -z "$NO_DOWNLOAD" ]; then
+if [ -z "$NO_UNPACK" ]; then
     downloadBoost
-fi
-
-if [ -z "$NO_DOWNLOAD" ] && [ -z "$NO_UNPACK" ]; then
     unpackBoost
     unpackAsynchronous
     inventMissingHeaders
@@ -1564,10 +1514,10 @@ fi
 
 if [ -n "$UNPACK" ]; then
     exit
+elif [[ -n $BUILD_IOS || -n $BUILD_TVOS || -n $BUILD_OSX || -n $BUILD_ANDROID || -n $BUILD_LINUX ]]; then
+    updateBoost "$BOOST_PLATFORM_NAME"
+    bootstrapBoost "$BOOST_PLATFORM_NAME"
 fi
-
-updateBoost "$BOOST_PLATFORM_NAME"
-bootstrapBoost "$BOOST_PLATFORM_NAME"
 
 if [[ -n $BUILD_ANDROID ]]; then
     buildBoost_Android
@@ -1606,14 +1556,14 @@ if [[ -n "$BUILD_HEADERS" ]]; then
     packageHeaders
 fi
 
-if [[ -z $NO_PACKAGE_LIBS ]]; then
+if [[ -n $BUILD_IOS || -n $BUILD_TVOS || -n $BUILD_OSX || -n $BUILD_ANDROID \
+    || -n $BUILD_LINUX || -n $BUILD_HEADERS ]]; then
+    renameArchives
     packageLibSet
 fi
 
-if [[ -z $MARK_DEPLOYED_ONLY ]]; then
+if [[ -n "$DEPLOY" ]]; then
     deployToBintray
-else
-    markBintrayDeployed
 fi
 
 echo "Completed successfully"
