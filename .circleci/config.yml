@@ -5,6 +5,12 @@ aliases:
     ~/twilio-boost-build
   - &build_output
     ~/twilio-boost-build/target/output
+  - ignore-master: &ignore-master
+      filters:
+        tags:
+          only: /.*/
+        branches:
+          ignore: /^master/
   - only-release-tags: &only-release-tags
       filters:
         tags:
@@ -37,7 +43,7 @@ aliases:
         type: steps
 
 executors:
-  linux-android-executor:
+  linux-executor:
     docker:
       - image: cibuilderbot/docker-circleci-linux-android
         auth:
@@ -47,9 +53,19 @@ executors:
     working_directory: *workspace
     environment:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
+  android-executor:
+    docker:
+      - image: twilio/twilio-video-sdk-toolchain:13
+        auth:
+          username: $DOCKER_HUB_USERNAME
+          password: $DOCKER_HUB_PASSWORD
+    resource_class: xlarge
+    working_directory: *workspace
+    environment:
+      CMAKE_BUILD_PARALLEL_LEVEL: 2
   macos-ios-executor:
     macos:
-      xcode: "10.1.0"
+      xcode: "11.0"
     resource_class: large
     working_directory: *workspace
 
@@ -62,17 +78,11 @@ commands:
           command: |
             if [ -z "$CIRCLE_TAG" ]; then
               echo "Must use release tag to build boost releases. Push \`release-1.71.0-twilio3\`-style tag to trigger."
-              exit 1
+              touch $BASH_ENV
+            else
+              echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
+              echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
             fi
-            echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
-            echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
-
-  generate_maven_settings:
-    description: "Generate Maven settings"
-    steps:
-      - run:
-          name: Generate Maven settings
-          command: echo "$BINTRAY_SETTINGS" | base64 --decode > bintray-settings.xml
 
   prepare_macos_ios:
     description: "Prepare environment for MacOS and iOS builds (cache enabled)"
@@ -83,14 +93,16 @@ commands:
     steps:
       - restore_cache:
           keys:
-            - v3-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
+            - v4-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Install necessary components through Homebrew"
           command: |
             brew update
             brew install maven
+            brew install boost-bcp
+            brew install rsync
       - save_cache:
-          key: v3-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
+          key: v4-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
           paths:
             - /usr/local/Homebrew
 
@@ -99,12 +111,12 @@ commands:
     steps:
       - checkout
       - generate_build_settings
-      - generate_maven_settings
       - run:
           name: Unpack tarball
           command: |
             source $BASH_ENV
-            ./boost.sh --unpack --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
+            ./boost.sh --unpack `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
+              `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX`
           no_output_timeout: 120m
       - persist_to_workspace:
           root: .
@@ -123,53 +135,47 @@ commands:
       - attach_workspace:
           at: *workspace
       - generate_build_settings
-      - generate_maven_settings
       - run:
           name: Build << parameters.platform >>
           command: |
             source $BASH_ENV
-            ./boost.sh -<< parameters.platform >> --no-clean --no-unpack --no-framework --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX --boost-libs "<< parameters.boost-libs >>"
+            ./boost.sh -<< parameters.platform >> --no-clean --no-unpack --no-framework `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
+              `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< parameters.boost-libs >>"
           no_output_timeout: 120m
-
-  mark-deployment-complete:
-    description: "Mark all deployed binaries as available for download"
-    steps:
-      - checkout
-      - generate_build_settings
-      - generate_maven_settings
-      - run:
-          name: Mark all platforms deployed
-          command: |
-            source $BASH_ENV
-            ./boost.sh --mark-bintray-deployed --boost-version $BOOST_VERSION --twilio-suffix -$TWILIO_SUFFIX
-          no_output_timeout: 120m
+      - persist_to_workspace:
+          root: .
+          paths:
+            - target/*
 
 jobs:
   unpack-sources:
-    executor: linux-android-executor
+    executor: linux-executor
     steps:
+      - run:
+          name: apt install
+          command: apt -y --no-install-recommends install libboost-tools-dev rsync
       - unpack
 
   build-headers:
-    executor: linux-android-executor
+    executor: linux-executor
     steps:
       - build:
           platform: headers
 
   build-linux:
-    executor: linux-android-executor
+    executor: linux-executor
     steps:
       - build:
           platform: linux
 
   build-linux-cxx11-abi-disabled:
-    executor: linux-android-executor
+    executor: linux-executor
     steps:
       - build:
           platform: linux-cxx11-abi-disabled
 
   build-android:
-    executor: linux-android-executor
+    executor: android-executor
     steps:
       - build:
           platform: android
@@ -181,7 +187,7 @@ jobs:
           platform: osx
           pre-steps:
             - prepare_macos_ios:
-                cache-tag: xcode10
+                cache-tag: xcode11
 
   build-ios:
     executor: macos-ios-executor
@@ -190,52 +196,66 @@ jobs:
           platform: ios
           pre-steps:
             - prepare_macos_ios:
-                cache-tag: xcode10
+                cache-tag: xcode11
 
   deploy-bintray:
-    executor: linux-android-executor
+    executor: linux-executor
+    description: "Deploy binaries to bintray"
+    parameters:
+      <<: *boost-libs-parameter
     steps:
-      - mark-deployment-complete
+      - checkout
+      - attach_workspace:
+          at: *workspace
+      - generate_build_settings
+      - run: #generate_maven_settings
+          name: Generate Maven settings
+          command: echo "$BINTRAY_SETTINGS" | base64 --decode > bintray-settings.xml
+      - run:
+          name: Deploy binaries to bintray
+          command: |
+            source $BASH_ENV
+            ./boost.sh --no-clean --no-unpack --no-framework --deploy `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
+              `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< parameters.boost-libs >>"
+          no_output_timeout: 120m
 
 workflows:
   version: 2
   build-and-deploy:
     jobs:
       - unpack-sources:
-          <<: *only-release-tags
+          <<: *ignore-master
           name: unpack
-
       - build-headers:
-          <<: *only-release-tags
+          <<: *ignore-master
           name: build-boost-headers
           requires:
             - unpack
       - build-android:
-          <<: *only-release-tags
+          <<: *ignore-master
           name: build-boost-android
           requires:
             - unpack
       - build-linux:
-          <<: *only-release-tags
+          <<: *ignore-master
           name: build-boost-linux
           requires:
             - unpack
       - build-linux-cxx11-abi-disabled:
-          <<: *only-release-tags
+          <<: *ignore-master
           name: build-boost-linux-cxx11-abi-disabled
           requires:
             - unpack
       - build-ios:
-          <<: *only-release-tags
+          <<: *ignore-master
           name: build-boost-ios
           requires:
             - unpack
       - build-osx:
-          <<: *only-release-tags
+          <<: *ignore-master
           name: build-boost-osx
           requires:
             - unpack
-
       - deploy-bintray:
           <<: *only-release-tags
           name: deploy
