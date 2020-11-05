@@ -46,6 +46,9 @@ executors:
   linux-executor:
     docker:
       - image: cibuilderbot/docker-circleci-linux-android
+        auth:
+          username: $DOCKER_HUB_USERNAME
+          password: $DOCKER_HUB_PASSWORD
     resource_class: xlarge
     working_directory: *workspace
     environment:
@@ -53,6 +56,9 @@ executors:
   android-executor:
     docker:
       - image: twilio/twilio-video-sdk-toolchain:13
+        auth:
+          username: $DOCKER_HUB_USERNAME
+          password: $DOCKER_HUB_PASSWORD
     resource_class: xlarge
     working_directory: *workspace
     environment:
