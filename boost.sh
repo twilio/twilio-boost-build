@@ -517,7 +517,7 @@ using darwin : ${IOS_SDK_VERSION}~iphone
 : <architecture>arm <target-os>iphone <address-model>64
 ;
 using darwin : ${IOS_SDK_VERSION}~iphonesim
-: $COMPILER -arch i386 -arch x86_64 $EXTRA_IOS_FLAGS
+: $COMPILER -arch i386 -arch x86_64 -arch arm64 $EXTRA_IOS_FLAGS
 : <striper> <root>$XCODE_ROOT/Platforms/iPhoneSimulator.platform/Developer
 : <architecture>x86 <target-os>iphone <address-model>32_64
 ;
