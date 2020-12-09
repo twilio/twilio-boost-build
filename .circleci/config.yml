@@ -148,6 +148,8 @@ commands:
             - target/*
       - store_artifacts:
           path: /root/twilio-boost-build/target/distributions
+      - store_artifacts:
+          path: /Users/distiller/twilio-boost-build/target/distributions
 
 jobs:
   unpack-sources:
