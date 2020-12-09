@@ -65,7 +65,7 @@ executors:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
   macos-ios-executor:
     macos:
-      xcode: "12.2"
+      xcode: "12.2.0"
     resource_class: large
     working_directory: *workspace
 
