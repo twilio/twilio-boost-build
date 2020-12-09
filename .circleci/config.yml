@@ -65,7 +65,7 @@ executors:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
   macos-ios-executor:
     macos:
-      xcode: "11.0"
+      xcode: "12.2"
     resource_class: large
     working_directory: *workspace
 
@@ -187,7 +187,7 @@ jobs:
           platform: osx
           pre-steps:
             - prepare_macos_ios:
-                cache-tag: xcode11
+                cache-tag: xcode12
 
   build-ios:
     executor: macos-ios-executor
@@ -196,7 +196,7 @@ jobs:
           platform: ios
           pre-steps:
             - prepare_macos_ios:
-                cache-tag: xcode11
+                cache-tag: xcode12
 
   deploy-bintray:
     executor: linux-executor
