@@ -458,17 +458,6 @@ applyPatches()
 {
     echo Applying patches, if any...
     (cd $BOOST_SRC; cat ${CURRENT_DIR}/patches/boost_${BOOST_VERSION2}*.patch | patch -p2) || echo "Patching failed"
-    
-    if [ "$(version "$BOOST_VERSION")" -le "$(version "1.73.0")" ] &&
-       [ "$(version "$XCODE_VERSION")" -ge "$(version "11.4")" ]
-    then
-        echo "Patching boost in $BOOST_SRC"
-
-        # https://github.com/boostorg/build/pull/560
-        (cd "$BOOST_SRC" && patch --forward -p1 -d "$BOOST_SRC/tools/build" < "$CURRENT_DIR/patches/xcode-11.4.patch")
-
-        doneSection
-    fi
 }
 
 unpackBoost()
