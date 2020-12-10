@@ -953,7 +953,7 @@ buildBoost_iOS()
             --prefix="$OUTPUT_DIR" \
             --libdir="$OUTPUT_DIR/lib/$VARIANT/fat-x86" \
             toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
-            variant=$VARIANT abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o \
+            variant=$VARIANT address-model=32_64 architecture=x86 binary-format=mach-o \
             target-os=iphone architecture=x86 threading=multi optimization=speed link=static \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ ${IOS_SIM_ARCH_FLAGS}" linkflags="-stdlib=libc++" \
             macosx-version=iphonesim-${IOS_SDK_VERSION} \
