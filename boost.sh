@@ -776,15 +776,31 @@ bootstrapBoost()
 {
     cd $BOOST_SRC
     BOOTSTRAP_LIBS=$BOOST_LIBS
-    if [[ "$1" == "tvOS" ]]; then
-        # Boost Test makes a call that is not available on tvOS (as of 1.61.0)
-        # If we're bootstraping for tvOS, just remove the test library
-        BOOTSTRAP_LIBS=$(echo $BOOTSTRAP_LIBS | sed -e "s/test//g")
+
+    # Strip out unsupported / unavailable libraries
+    if [[ "$1" == "iOS" ]]; then
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//context/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//coroutine/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//coroutine2/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//math/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//mpi/}"
     fi
 
-    BOOST_LIBS_COMMA=$(echo $BOOTSTRAP_LIBS | sed -e "s/ /,/g")
+    if [[ "$1" == "tvOS" ]]; then
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//container/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//context/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//coroutine/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//coroutine2/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//math/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//metaparse/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//mpi/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//test/}"
+    fi
+
+    echo "Bootstrap libs ${BOOTSTRAP_LIBS}"
+    BOOST_LIBS_COMMA="${BOOTSTRAP_LIBS// /,}"
     echo "Bootstrapping for $1 (with libs $BOOST_LIBS_COMMA)"
-    ./bootstrap.sh --with-libraries=$BOOST_LIBS_COMMA
+    ./bootstrap.sh --with-libraries="$BOOST_LIBS_COMMA"
 
     doneSection
 }
