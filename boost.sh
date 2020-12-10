@@ -446,7 +446,8 @@ cleanup()
 
     if [[ -n $BUILD_IOS ]]; then
         rm -rf "$BOOST_SRC/iphone-build"
-        rm -rf "$BOOST_SRC/iphonesim-build"
+        rm -rf "$BOOST_SRC/iphonesimulator-intel-build"
+        rm -rf "$BOOST_SRC/iphonesimulator-arm-build"
         rm -rf "$OUTPUT_DIR"
     fi
     if [[ -n $BUILD_TVOS ]]; then
@@ -776,15 +777,31 @@ bootstrapBoost()
 {
     cd $BOOST_SRC
     BOOTSTRAP_LIBS=$BOOST_LIBS
-    if [[ "$1" == "tvOS" ]]; then
-        # Boost Test makes a call that is not available on tvOS (as of 1.61.0)
-        # If we're bootstraping for tvOS, just remove the test library
-        BOOTSTRAP_LIBS=$(echo $BOOTSTRAP_LIBS | sed -e "s/test//g")
+
+    # Strip out unsupported / unavailable libraries
+    if [[ "$1" == "iOS" ]]; then
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//context/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//coroutine/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//coroutine2/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//math/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//mpi/}"
     fi
 
-    BOOST_LIBS_COMMA=$(echo $BOOTSTRAP_LIBS | sed -e "s/ /,/g")
+    if [[ "$1" == "tvOS" ]]; then
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//container/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//context/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//coroutine/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//coroutine2/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//math/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//metaparse/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//mpi/}"
+        BOOTSTRAP_LIBS="${BOOTSTRAP_LIBS//test/}"
+    fi
+
+    echo "Bootstrap libs ${BOOTSTRAP_LIBS}"
+    BOOST_LIBS_COMMA="${BOOTSTRAP_LIBS// /,}"
     echo "Bootstrapping for $1 (with libs $BOOST_LIBS_COMMA)"
-    ./bootstrap.sh --with-libraries=$BOOST_LIBS_COMMA
+    ./bootstrap.sh --with-libraries="$BOOST_LIBS_COMMA"
 
     doneSection
 }
@@ -886,7 +903,8 @@ buildBoost_iOS()
     mkdir -p $OUTPUT_DIR
     echo > ${OUTPUT_DIR}/iphone-armv7-build.log
     echo > ${OUTPUT_DIR}/iphone-armv64-build.log
-    echo > ${OUTPUT_DIR}/iphonesimulator-build.log
+    echo > ${OUTPUT_DIR}/iphonesimulator-intel-build.log
+    echo > ${OUTPUT_DIR}/iphonesimulator-arm-build.log
 
     IOS_SHARED_FLAGS="target-os=iphone threading=multi \
         abi=aapcs binary-format=mach-o \
@@ -931,23 +949,46 @@ buildBoost_iOS()
     doneSection
 
     for VARIANT in debug release; do
-        echo Building $VARIANT fat Boost for iPhoneSimulator
+        echo Building $VARIANT fat Intel Boost for iPhoneSimulator
 
-        ./b2 $THREADS --build-dir=iphonesim-build --stagedir=iphonesim-build/stage \
+        ./b2 $THREADS \
+            --build-dir=iphonesimulator-intel-build \
+           --stagedir=iphonesimulator-intel-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$OUTPUT_DIR/lib/$VARIANT/fat-x86" \
+            --libdir="$OUTPUT_DIR/lib/$VARIANT/simulator-intel" \
             toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
-            variant=$VARIANT address-model=32_64 architecture=x86 binary-format=mach-o \
-            target-os=iphone architecture=x86 threading=multi optimization=speed link=static \
-            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ ${IOS_SIM_ARCH_FLAGS}" linkflags="-stdlib=libc++" \
+            variant=$VARIANT abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o \
+            target-os=iphone threading=multi optimization=speed link=static \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -arch i386 -arch x86_64" linkflags="-stdlib=libc++" \
             macosx-version=iphonesim-${IOS_SDK_VERSION} \
-            install >> "${OUTPUT_DIR}/iphonesimulator-build.log" 2>&1
+            install >> "${OUTPUT_DIR}/iphonesimulator-intel-build.log" 2>&1
         if [ $? != 0 ]; then
-            cat "${OUTPUT_DIR}/iphonesimulator-build.log"
-            echo "Error staging iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-build.log"
+            cat "${OUTPUT_DIR}/iphonesimulator-intel-build.log"
+            echo "Error staging Intel-based iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-intel-build.log"
             exit 1
         fi
     done
+
+    for VARIANT in debug release; do
+        echo Building $VARIANT arm64 Boost for iPhoneSimulator
+
+        ./b2 $THREADS --build-dir=iphonesimulator-arm-build \
+            --stagedir=iphonesimulator-arm-build/stage \
+            --prefix="$OUTPUT_DIR" \
+            --libdir="$OUTPUT_DIR/lib/$VARIANT/simulator-arm" \
+            toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
+            variant=$VARIANT address-model=64 architecture=arm binary-format=mach-o \
+            target-os=iphone threading=multi optimization=speed link=static \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -arch arm64" linkflags="-stdlib=libc++" \
+            macosx-version=iphonesim-${IOS_SDK_VERSION} \
+            install >> "${OUTPUT_DIR}/iphonesimulator-arm-build.log" 2>&1
+        if [ $? != 0 ]; then
+            cat "${OUTPUT_DIR}/iphonesimulator-arm-build.log"
+            echo "Error staging arm-based iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-arm-build.log"
+            exit 1
+        fi
+    done
+
 
     doneSection
 }
@@ -1190,266 +1231,6 @@ deployToBintray()
     deployPlat "osx" "$BUILDDIR"
     deployPlat "linux-cxx11-abi-disabled" "$BUILDDIR"
     deployPlat "linux" "$BUILDDIR"
-}
-
-#===============================================================================
-
-unpackArchive()
-{
-    BUILDDIR="$1"
-    LIBNAME="$2"
-
-    echo "Unpacking $BUILDDIR/$LIBNAME"
-
-    if [[ -d "$BUILDDIR/$LIBNAME" ]]; then 
-        cd "$BUILDDIR/$LIBNAME"
-        rm *.o
-        rm *.SYMDEF*
-    else
-        mkdir -p "$BUILDDIR/$LIBNAME"
-    fi
-
-    (
-        cd "$BUILDDIR/$NAME"; ar -x "../../libboost_${BOOST_VERSION2}_$NAME.a";
-        for FILE in *.o; do
-            NEW_FILE="${NAME}_${FILE}"
-            mv "$FILE" "$NEW_FILE"
-        done
-    )
-}
-
-#===============================================================================
-
-scrunchAllLibsTogetherInOneLibPerPlatform()
-{
-    echo "Framework builds are not supported - need to fix all the paths"
-    exit 1
-
-    cd "$BOOST_SRC"
-
-    if [[ -n $BUILD_IOS ]]; then
-        # iOS Device
-        mkdir -p "$BUILD_DIR/armv7/obj"
-        mkdir -p "$BUILD_DIR/arm64/obj"
-
-        # iOS Simulator
-        mkdir -p "$BUILD_DIR/i386/obj"
-        mkdir -p "$BUILD_DIR/x86_64/obj"
-    fi
-
-    if [[ -n $BUILD_TVOS ]]; then
-        # tvOS Device
-        mkdir -p "$BUILD_DIR/arm64/obj"
-
-        # tvOS Simulator
-        mkdir -p "$BUILD_DIR/x86_64/obj"
-    fi
-
-    if [[ -n $BUILD_OSX ]]; then
-        # OSX
-        for ARCH in $OSX_ARCHS; do
-            mkdir -p "$BUILD_DIR/$ARCH/obj"
-        done
-    fi
-
-    ALL_LIBS=""
-
-    echo Splitting all existing fat binaries...
-
-    for NAME in $BOOST_LIBS; do
-        if [ "$NAME" == "test" ]; then
-            NAME="unit_test_framework"
-        fi
-
-        ALL_LIBS="$ALL_LIBS libboost_${BOOST_VERSION2}_$NAME.a"
-
-        if [[ -n $BUILD_IOS ]]; then
-            $IOS_DEV_CMD lipo "iphone-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
-                -thin armv7 -o "$BUILD_DIR/armv7/libboost_${BOOST_VERSION2}_$NAME.a"
-            $IOS_DEV_CMD lipo "iphone-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
-                -thin arm64 -o "$BUILD_DIR/arm64/libboost_${BOOST_VERSION2}_$NAME.a"
-
-            $IOS_SIM_DEV_CMD lipo "iphonesim-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
-                -thin i386 -o "$BUILD_DIR/i386/libboost_${BOOST_VERSION2}_$NAME.a"
-            $IOS_SIM_DEV_CMD lipo "iphonesim-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
-                -thin x86_64 -o "$BUILD_DIR/x86_64/libboost_${BOOST_VERSION2}_$NAME.a"
-        fi
-
-        if [[ -n $BUILD_TVOS ]]; then
-            $TVOS_DEV_CMD lipo "appletv-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
-                -thin arm64 -o "$BUILD_DIR/arm64/libboost_${BOOST_VERSION2}_$NAME.a"
-
-            $TVOS_SIM_DEV_CMD lipo "appletvsim-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
-                -thin x86_64 -o "$BUILD_DIR/x86_64/libboost_${BOOST_VERSION2}_$NAME.a"
-        fi
-
-        if [[ -n $BUILD_OSX ]]; then
-            if (( $OSX_ARCH_COUNT == 1 )); then
-                cp "osx-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
-                    "$BUILD_DIR/$ARCH/libboost_${BOOST_VERSION2}_$NAME.a"
-            else
-                for ARCH in $OSX_ARCHS; do
-                    $OSX_DEV_CMD lipo "osx-build/stage/lib/libboost_${BOOST_VERSION2}_$NAME.a" \
-                        -thin $ARCH -o "$BUILD_DIR/$ARCH/libboost_${BOOST_VERSION2}_$NAME.a"
-                done
-            fi
-        fi
-    done
-
-    echo "Decomposing each architecture's .a files"
-
-    for NAME in $BOOST_LIBS; do
-        if [ "$NAME" == "test" ]; then
-            NAME="unit_test_framework"
-        fi
-
-        echo "Decomposing libboost_${BOOST_VERSION2}_${NAME}.a"
-        if [[ -n $BUILD_IOS ]]; then
-            unpackArchive "$BUILD_DIR/armv7/obj" $NAME
-            unpackArchive "$BUILD_DIR/arm64/obj" $NAME
-            unpackArchive "$BUILD_DIR/i386/obj" $NAME
-            unpackArchive "$BUILD_DIR/x86_64/obj" $NAME
-        fi
-
-        if [[ -n $BUILD_TVOS ]]; then
-            unpackArchive "$BUILD_DIR/arm64/obj" $NAME
-            unpackArchive "$BUILD_DIR/x86_64/obj" $NAME
-        fi
-
-        if [[ -n $BUILD_OSX ]]; then
-            for ARCH in $OSX_ARCHS; do
-                unpackArchive "$BUILD_DIR/$ARCH/obj" $NAME
-            done
-        fi
-    done
-
-    echo "Linking each architecture into an uberlib ($ALL_LIBS => libboost_${BOOST_VERSION2}.a )"
-    if [[ -n $BUILD_IOS ]]; then
-        cd "$BUILD_DIR"
-        rm */libboost_${BOOST_VERSION2}.a
-    fi
-    if [[ -n $BUILD_TVOS ]]; then
-        cd "$BUILD_DIR"
-        rm */libboost_${BOOST_VERSION2}.a
-    fi
-    if [[ -n $BUILD_OSX ]]; then
-        for ARCH in $OSX_ARCHS; do
-            rm "$BUILD_DIR/$ARCH/libboost_${BOOST_VERSION2}.a"
-        done
-    fi
-
-    for NAME in $BOOST_LIBS; do
-        if [ "$NAME" == "test" ]; then
-            NAME="unit_test_framework"
-        fi
-
-        echo "Archiving $NAME"
-
-        # The obj/$NAME/*.o below should all be quoted, but I couldn't figure out how to do that elegantly.
-        # Boost lib names probably won't contain non-word characters any time soon, though. ;) - Jan
-
-        if [[ -n $BUILD_IOS ]]; then
-            echo ...armv7
-            (cd "$BUILD_DIR/armv7"; $IOS_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
-            echo ...arm64
-            (cd "$BUILD_DIR/arm64"; $IOS_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
-
-            echo ...i386
-            (cd "$BUILD_DIR/i386";  $IOS_SIM_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
-            echo ...x86_64
-            (cd "$BUILD_DIR/x86_64";  $IOS_SIM_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
-        fi
-
-        if [[ -n $BUILD_TVOS ]]; then
-            echo ...tvOS-arm64
-            (cd "$BUILD_DIR/arm64"; $TVOS_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
-            echo ...tvOS-x86_64
-            (cd "$BUILD_DIR/x86_64";  $TVOS_SIM_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
-        fi
-
-        if [[ -n $BUILD_OSX ]]; then
-            for ARCH in $OSX_ARCHS; do
-                echo ...osx-$ARCH
-                (cd "$BUILD_DIR/$ARCH";  $OSX_DEV_CMD ar crus libboost_${BOOST_VERSION2}.a obj/$NAME/*.o; )
-            done
-        fi
-    done
-}
-
-#===============================================================================
-
-buildFramework()
-{
-    : ${1:?}
-    FRAMEWORKDIR="$1"
-    BUILDDIR="$2/build"
-    PREFIXDIR="$2/prefix"
-
-    VERSION_TYPE=Alpha
-    FRAMEWORK_NAME=boost
-    FRAMEWORK_VERSION=A
-
-    FRAMEWORK_CURRENT_VERSION="$BOOST_VERSION"
-    FRAMEWORK_COMPATIBILITY_VERSION="$BOOST_VERSION"
-
-    FRAMEWORK_BUNDLE="$FRAMEWORKDIR/$FRAMEWORK_NAME.framework"
-    echo "Framework: Building $FRAMEWORK_BUNDLE from $BUILDDIR..."
-
-    rm -rf "$FRAMEWORK_BUNDLE"
-
-    echo "Framework: Setting up directories..."
-    mkdir -p "$FRAMEWORK_BUNDLE/Versions/$FRAMEWORK_VERSION/Resources"
-    mkdir -p "$FRAMEWORK_BUNDLE/Versions/$FRAMEWORK_VERSION/Headers"
-    mkdir -p "$FRAMEWORK_BUNDLE/Versions/$FRAMEWORK_VERSION/Documentation"
-
-    echo "Framework: Creating symlinks..."
-    ln -s "$FRAMEWORK_VERSION"               "$FRAMEWORK_BUNDLE/Versions/Current"
-    ln -s "Versions/Current/Headers"         "$FRAMEWORK_BUNDLE/Headers"
-    ln -s "Versions/Current/Resources"       "$FRAMEWORK_BUNDLE/Resources"
-    ln -s "Versions/Current/Documentation"   "$FRAMEWORK_BUNDLE/Documentation"
-    ln -s "Versions/Current/$FRAMEWORK_NAME" "$FRAMEWORK_BUNDLE/$FRAMEWORK_NAME"
-
-    FRAMEWORK_INSTALL_NAME="$FRAMEWORK_BUNDLE/Versions/$FRAMEWORK_VERSION/$FRAMEWORK_NAME"
-
-    echo "Lipoing library into $FRAMEWORK_INSTALL_NAME..."
-    cd "$BUILDDIR"
-    if [[ -n $BUILD_IOS ]]; then
-        $IOS_DEV_CMD lipo -create */libboost_${BOOST_VERSION2}.a -o "$FRAMEWORK_INSTALL_NAME" || abort "Lipo $1 failed"
-    fi
-    if [[ -n $BUILD_TVOS ]]; then
-        $TVOS_DEV_CMD lipo -create */libboost_${BOOST_VERSION2}.a -o "$FRAMEWORK_INSTALL_NAME" || abort "Lipo $1 failed"
-    fi
-    if [[ -n $BUILD_OSX ]]; then
-        $OSX_DEV_CMD lipo -create */libboost_${BOOST_VERSION2}.a -o "$FRAMEWORK_INSTALL_NAME" || abort "Lipo $1 failed"
-    fi
-
-    echo "Framework: Copying includes..."
-    cd "$PREFIXDIR/include/boost"
-    cp -r * "$FRAMEWORK_BUNDLE/Headers/"
-
-    echo "Framework: Creating plist..."
-    cat > "$FRAMEWORK_BUNDLE/Resources/Info.plist" <<EOF
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-<key>CFBundleExecutable</key>
-<string>${FRAMEWORK_NAME}</string>
-<key>CFBundleIdentifier</key>
-<string>org.boost</string>
-<key>CFBundleInfoDictionaryVersion</key>
-<string>6.0</string>
-<key>CFBundlePackageType</key>
-<string>FMWK</string>
-<key>CFBundleSignature</key>
-<string>????</string>
-<key>CFBundleVersion</key>
-<string>${FRAMEWORK_CURRENT_VERSION}</string>
-</dict>
-</plist>
-EOF
-
-    doneSection
 }
 
 #===============================================================================
