@@ -57,6 +57,12 @@ REPO_ID=bintray
 MIN_IOS_VERSION=10.0
 IOS_SDK_VERSION=`xcrun --sdk iphoneos --show-sdk-version`
 
+IOS_SIM_ARCHS="i386 x86_64 arm64"
+IOS_SIM_ARCH_FLAGS=""
+for ARCH in $IOS_SIM_ARCHS; do
+    IOS_SIM_ARCH_FLAGS="$IOS_SIM_ARCH_FLAGS -arch $ARCH"
+done
+
 MIN_TVOS_VERSION=9.2
 TVOS_SDK_VERSION=`xcrun --sdk appletvos --show-sdk-version`
 
@@ -546,7 +552,7 @@ using darwin : ${IOS_SDK_VERSION}~iphone
 : <architecture>arm <target-os>iphone <address-model>64
 ;
 using darwin : ${IOS_SDK_VERSION}~iphonesim
-: $COMPILER -arch i386 -arch x86_64 -arch arm64 $EXTRA_IOS_FLAGS
+: $COMPILER $IOS_SIM_ARCH_FLAGS $EXTRA_IOS_FLAGS
 : <striper> <root>$XCODE_ROOT/Platforms/iPhoneSimulator.platform/Developer
 : <architecture>x86 <target-os>iphone <address-model>32_64
 ;
@@ -933,7 +939,7 @@ buildBoost_iOS()
             toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
             variant=$VARIANT abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o \
             target-os=iphone architecture=x86 threading=multi optimization=speed link=static \
-            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ ${IOS_SIM_ARCH_FLAGS}" linkflags="-stdlib=libc++" \
             macosx-version=iphonesim-${IOS_SDK_VERSION} \
             install >> "${OUTPUT_DIR}/iphonesimulator-build.log" 2>&1
         if [ $? != 0 ]; then
