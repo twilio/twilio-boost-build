@@ -256,11 +256,11 @@ workflows:
           name: build-boost-ios
           requires:
             - unpack
-      - build-osx:
-          <<: *ignore-master
-          name: build-boost-osx
-          requires:
-            - unpack
+      # - build-osx:
+      #     <<: *ignore-master
+      #     name: build-boost-osx
+      #     requires:
+      #       - unpack
       - deploy-bintray:
           <<: *only-release-tags
           name: deploy
@@ -270,4 +270,4 @@ workflows:
             # - build-boost-linux
             # - build-boost-linux-cxx11-abi-disabled
             - build-boost-ios
-            - build-boost-osx
+            # - build-boost-osx
