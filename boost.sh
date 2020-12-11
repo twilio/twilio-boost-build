@@ -933,7 +933,7 @@ buildBoost_iOS()
             --prefix="$OUTPUT_DIR" \
             --libdir="$OUTPUT_DIR/lib/$VARIANT/iphonesimulator/i386" \
             toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
-            variant=$VARIANT abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o \
+            variant=$VARIANT abi=sysv address-model=32 architecture=x86 binary-format=mach-o \
             target-os=iphone threading=multi optimization=speed link=static \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -arch i386 -isysroot ${IOSSIM_SDK_PATH}" \
             linkflags="-stdlib=libc++" \
@@ -947,21 +947,21 @@ buildBoost_iOS()
     done
 
     for VARIANT in debug release; do
-        echo Building $VARIANT 64-bit Boost for x84_64 iPhoneSimulators
+        echo Building $VARIANT 64-bit Boost for x86_64 iPhoneSimulators
 
         ./b2 $THREADS --build-dir=iphonesim-build --stagedir=iphonesim-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$OUTPUT_DIR/lib/$VARIANT/iphonesimulator/x84_64" \
+            --libdir="$OUTPUT_DIR/lib/$VARIANT/iphonesimulator/x86_64" \
             toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
-            variant=$VARIANT abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o \
+            variant=$VARIANT abi=sysv address-model=64 architecture=x86 binary-format=mach-o \
             target-os=iphone threading=multi optimization=speed link=static \
-            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -arch x84_64 -isysroot ${IOSSIM_SDK_PATH}" \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -arch x86_64 -isysroot ${IOSSIM_SDK_PATH}" \
             linkflags="-stdlib=libc++" \
             macosx-version=iphonesim-${IOS_SDK_VERSION} \
-            install >> "${OUTPUT_DIR}/iphonesimulator-x84_64-build.log" 2>&1
+            install >> "${OUTPUT_DIR}/iphonesimulator-x86_64-build.log" 2>&1
         if [ $? != 0 ]; then
-            cat "${OUTPUT_DIR}/iphonesimulator-x84_64-build.log"
-            echo "Error staging i386 iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-x84_64-build.log"
+            cat "${OUTPUT_DIR}/iphonesimulator-x86_64-build.log"
+            echo "Error staging i386 iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-x86_64-build.log"
             exit 1
         fi
     done
