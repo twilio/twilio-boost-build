@@ -78,9 +78,6 @@ commands:
           command: |
             if [ -z "$CIRCLE_TAG" ]; then
               echo "Must use release tag to build boost releases. Push \`release-1.71.0-twilio3\`-style tag to trigger."
-              # Remove this 
-              echo 'export BOOST_VERSION=1.74.0' >> $BASH_ENV
-              # ^^^^^^^^^^^
               touch $BASH_ENV
             else
               echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
@@ -236,38 +233,38 @@ workflows:
           name: build-boost-headers
           requires:
             - unpack
-      # - build-android:
-      #     <<: *ignore-master
-      #     name: build-boost-android
-      #     requires:
-      #       - unpack
-      # - build-linux:
-      #     <<: *ignore-master
-      #     name: build-boost-linux
-      #     requires:
-      #       - unpack
-      # - build-linux-cxx11-abi-disabled:
-      #     <<: *ignore-master
-      #     name: build-boost-linux-cxx11-abi-disabled
-      #     requires:
-      #       - unpack
+      - build-android:
+          <<: *ignore-master
+          name: build-boost-android
+          requires:
+            - unpack
+      - build-linux:
+          <<: *ignore-master
+          name: build-boost-linux
+          requires:
+            - unpack
+      - build-linux-cxx11-abi-disabled:
+          <<: *ignore-master
+          name: build-boost-linux-cxx11-abi-disabled
+          requires:
+            - unpack
       - build-ios:
           <<: *ignore-master
           name: build-boost-ios
           requires:
             - unpack
-      # - build-osx:
-      #     <<: *ignore-master
-      #     name: build-boost-osx
-      #     requires:
-      #       - unpack
+      - build-osx:
+          <<: *ignore-master
+          name: build-boost-osx
+          requires:
+            - unpack
       - deploy-bintray:
           <<: *only-release-tags
           name: deploy
           requires:
             - build-boost-headers
-            # - build-boost-android
-            # - build-boost-linux
-            # - build-boost-linux-cxx11-abi-disabled
+            - build-boost-android
+            - build-boost-linux
+            - build-boost-linux-cxx11-abi-disabled
             - build-boost-ios
-            # - build-boost-osx
+            - build-boost-osx
