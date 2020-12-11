@@ -57,12 +57,6 @@ REPO_ID=bintray
 MIN_IOS_VERSION=10.0
 IOS_SDK_VERSION=`xcrun --sdk iphoneos --show-sdk-version`
 
-IOS_SIM_ARCHS="i386 x86_64 arm64"
-IOS_SIM_ARCH_FLAGS=""
-for ARCH in $IOS_SIM_ARCHS; do
-    IOS_SIM_ARCH_FLAGS="$IOS_SIM_ARCH_FLAGS -arch $ARCH"
-done
-
 MIN_TVOS_VERSION=9.2
 TVOS_SDK_VERSION=`xcrun --sdk appletvos --show-sdk-version`
 
@@ -543,24 +537,18 @@ generateIosUserConfig()
     cat > "$BOOST_SRC/tools/build/src/user-config.jam" <<EOF
 using darwin : ${IOS_SDK_VERSION}~iphone
 : $COMPILER -arch armv7 $EXTRA_IOS_FLAGS
-: <striper> <root>$IOS_SDK_PATH
-: <architecture>arm <target-os>iphone <address-model>32 <threading>multi
+: <striper> <root>$XCODE_ROOT/Platforms/iPhoneOS.platform/Developer
+: <architecture>arm <target-os>iphone <address-model>32
 ;
 using darwin : ${IOS_SDK_VERSION}~iphone
 : $COMPILER -arch arm64 $EXTRA_IOS_FLAGS
-: <striper> <root>$IOS_SDK_PATH
-: <architecture>arm <target-os>iphone <address-model>64 <threading>multi
-;
-using darwin : $IOS_SDK_VERSION~iphonesim
-: $COMPILER -arch i386 -arch x86_64 $EXTRA_IOS_SIM_FLAGS
-: <striper> <root>$IOSSIM_SDK_PATH
-: <architecture>x86 <target-os>iphone <address-model>32_64 <threading>multi
+: <striper> <root>$XCODE_ROOT/Platforms/iPhoneOS.platform/Developer
+: <architecture>arm <target-os>iphone <address-model>64
 ;
 using darwin : ${IOS_SDK_VERSION}~iphonesim
-: $COMPILER -arch arm64 $$EXTRA_IOS_SIM_FLAGS
-: <striper> <root>$IOSSIM_SDK_PATH
-: <architecture>arm <target-os>iphone <address-model>64 <threading>multi
-;
+: $COMPILER -arch i386 -arch x86_64 $EXTRA_IOS_SIM_FLAGS
+: <striper> <root>$XCODE_ROOT/Platforms/iPhoneSimulator.platform/Developer
+: <architecture>x86 <target-os>iphone <address-model>32_64
 ;
 EOF
 }
@@ -892,7 +880,8 @@ buildBoost_iOS()
     mkdir -p $OUTPUT_DIR
     echo > ${OUTPUT_DIR}/iphone-armv7-build.log
     echo > ${OUTPUT_DIR}/iphone-armv64-build.log
-    echo > ${OUTPUT_DIR}/iphonesimulator-intel-build.log
+    echo > ${OUTPUT_DIR}/iphonesimulator-i386-build.log
+    echo > ${OUTPUT_DIR}/iphonesimulator-x86_64-build.log
     echo > ${OUTPUT_DIR}/iphonesimulator-arm64-build.log
 
     IOS_SHARED_FLAGS="target-os=iphone threading=multi \
@@ -904,7 +893,7 @@ buildBoost_iOS()
 
         ./b2 $THREADS --build-dir=iphone-build --stagedir=iphone-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$OUTPUT_DIR/lib/$VARIANT/armeabi-v7a" \
+            --libdir="$OUTPUT_DIR/lib/$VARIANT/iphoneos/armv7" \
             toolset=darwin-${IOS_SDK_VERSION}~iphone \
             variant=$VARIANT address-model=32 architecture=arm optimization=space \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
@@ -922,7 +911,7 @@ buildBoost_iOS()
 
         ./b2 $THREADS --build-dir=iphone-build --stagedir=iphone-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$OUTPUT_DIR/lib/$VARIANT/arm64-v8a" \
+            --libdir="$OUTPUT_DIR/lib/$VARIANT/iphoneos/arm64" \
             toolset=darwin-${IOS_SDK_VERSION}~iphone \
             variant=$VARIANT address-model=64 architecture=arm optimization=space \
             cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++" linkflags="-stdlib=libc++" \
@@ -938,21 +927,41 @@ buildBoost_iOS()
     doneSection
 
     for VARIANT in debug release; do
-        echo Building $VARIANT fat Boost for Intel iPhoneSimulators
+        echo Building $VARIANT 32-bit Boost for i386 iPhoneSimulators
 
         ./b2 $THREADS --build-dir=iphonesim-build --stagedir=iphonesim-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$OUTPUT_DIR/lib/$VARIANT/iphonesimulator-intel" \
+            --libdir="$OUTPUT_DIR/lib/$VARIANT/iphonesimulator/i386" \
             toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
-            variant=$VARIANT abi=sysv address-model=32_64 architecture=combined binary-format=mach-o \
+            variant=$VARIANT abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o \
             target-os=iphone threading=multi optimization=speed link=static \
-            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ ${IOS_SIM_ARCH_FLAGS} -isysroot ${IOSSIM_SDK_PATH}" \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -arch i386 -isysroot ${IOSSIM_SDK_PATH}" \
             linkflags="-stdlib=libc++" \
             macosx-version=iphonesim-${IOS_SDK_VERSION} \
-            install >> "${OUTPUT_DIR}/iphonesimulator-intel-build.log" 2>&1
+            install >> "${OUTPUT_DIR}/iphonesimulator-i386-build.log" 2>&1
         if [ $? != 0 ]; then
-            cat "${OUTPUT_DIR}/iphonesimulator-intel-build.log"
-            echo "Error staging Intel iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-intel-build.log"
+            cat "${OUTPUT_DIR}/iphonesimulator-i386-build.log"
+            echo "Error staging i386 iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-i386-build.log"
+            exit 1
+        fi
+    done
+
+    for VARIANT in debug release; do
+        echo Building $VARIANT 64-bit Boost for x84_64 iPhoneSimulators
+
+        ./b2 $THREADS --build-dir=iphonesim-build --stagedir=iphonesim-build/stage \
+            --prefix="$OUTPUT_DIR" \
+            --libdir="$OUTPUT_DIR/lib/$VARIANT/iphonesimulator/x84_64" \
+            toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
+            variant=$VARIANT abi=sysv address-model=32_64 architecture=x86 binary-format=mach-o \
+            target-os=iphone threading=multi optimization=speed link=static \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -arch x84_64 -isysroot ${IOSSIM_SDK_PATH}" \
+            linkflags="-stdlib=libc++" \
+            macosx-version=iphonesim-${IOS_SDK_VERSION} \
+            install >> "${OUTPUT_DIR}/iphonesimulator-x84_64-build.log" 2>&1
+        if [ $? != 0 ]; then
+            cat "${OUTPUT_DIR}/iphonesimulator-x84_64-build.log"
+            echo "Error staging i386 iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-x84_64-build.log"
             exit 1
         fi
     done
@@ -962,11 +971,11 @@ buildBoost_iOS()
 
         ./b2 $THREADS --build-dir=iphonesim-build --stagedir=iphonesim-build/stage \
             --prefix="$OUTPUT_DIR" \
-            --libdir="$OUTPUT_DIR/lib/$VARIANT/iphonesimulator-arm64" \
+            --libdir="$OUTPUT_DIR/lib/$VARIANT/iphonesimulator/arm64" \
             toolset=darwin-${IOS_SDK_VERSION}~iphonesim \
             variant=$VARIANT abi=aapcs address-model=64 architecture=arm binary-format=mach-o \
             target-os=iphone threading=multi optimization=speed link=static \
-            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ ${IOS_SIM_ARCH_FLAGS} -isysroot ${IOSSIM_SDK_PATH}" \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -arch arm64 -isysroot ${IOSSIM_SDK_PATH}" \
             linkflags="-stdlib=libc++" \
             macosx-version=iphonesim-${IOS_SDK_VERSION} \
             install >> "${OUTPUT_DIR}/iphonesimulator-arm64-build.log" 2>&1

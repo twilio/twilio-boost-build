@@ -26,7 +26,7 @@ aliases:
       boost-libs:
         description: "List of boost libraries to build"
         type: string
-        default: "atomic container context coroutine date_time exception iostreams program_options random regex serialization system test thread"
+        default: "atomic context coroutine date_time exception iostreams program_options random regex serialization system test thread"
   - pre-steps-parameter: &pre-steps-parameter
       pre-steps:
         description: "Steps that will be executed before build starts"
@@ -236,38 +236,38 @@ workflows:
           name: build-boost-headers
           requires:
             - unpack
-      # - build-android:
-      #     <<: *ignore-master
-      #     name: build-boost-android
-      #     requires:
-      #       - unpack
-      # - build-linux:
-      #     <<: *ignore-master
-      #     name: build-boost-linux
-      #     requires:
-      #       - unpack
-      # - build-linux-cxx11-abi-disabled:
-      #     <<: *ignore-master
-      #     name: build-boost-linux-cxx11-abi-disabled
-      #     requires:
-      #       - unpack
+      - build-android:
+          <<: *ignore-master
+          name: build-boost-android
+          requires:
+            - unpack
+      - build-linux:
+          <<: *ignore-master
+          name: build-boost-linux
+          requires:
+            - unpack
+      - build-linux-cxx11-abi-disabled:
+          <<: *ignore-master
+          name: build-boost-linux-cxx11-abi-disabled
+          requires:
+            - unpack
       - build-ios:
           <<: *ignore-master
           name: build-boost-ios
           requires:
             - unpack
-      # - build-osx:
-      #     <<: *ignore-master
-      #     name: build-boost-osx
-      #     requires:
-      #       - unpack
+      - build-osx:
+          <<: *ignore-master
+          name: build-boost-osx
+          requires:
+            - unpack
       - deploy-bintray:
           <<: *only-release-tags
           name: deploy
           requires:
             - build-boost-headers
-            # - build-boost-android
-            # - build-boost-linux
-            # - build-boost-linux-cxx11-abi-disabled
+            - build-boost-android
+            - build-boost-linux
+            - build-boost-linux-cxx11-abi-disabled
             - build-boost-ios
-            # - build-boost-osx
+            - build-boost-osx
