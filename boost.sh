@@ -546,9 +546,14 @@ using darwin : ${IOS_SDK_VERSION}~iphone
 : <architecture>arm <target-os>iphone <address-model>64
 ;
 using darwin : ${IOS_SDK_VERSION}~iphonesim
-: $COMPILER -arch i386 -arch x86_64 $EXTRA_IOS_SIM_FLAGS
+: $COMPILER -arch i386 $EXTRA_IOS_SIM_FLAGS
 : <striper> <root>$XCODE_ROOT/Platforms/iPhoneSimulator.platform/Developer
-: <architecture>x86 <target-os>iphone <address-model>32_64
+: <architecture>x86 <target-os>iphone <address-model>32
+;
+using darwin : ${IOS_SDK_VERSION}~iphonesim
+: $COMPILER -arch x86_64 $EXTRA_IOS_SIM_FLAGS
+: <striper> <root>$XCODE_ROOT/Platforms/iPhoneSimulator.platform/Developer
+: <architecture>x86 <target-os>iphone <address-model>64
 ;
 EOF
 }
@@ -902,7 +907,7 @@ buildBoost_iOS()
             $IOS_SHARED_FLAGS install >> "${OUTPUT_DIR}/iphone-armv7-build.log" 2>&1
         if [ $? != 0 ]; then
             cat "${OUTPUT_DIR}/iphone-armv7-build.log"
-            echo "Error staging iPhone armv7. Check ${OUTPUT_DIR}/iphone-armv7-build.log"
+            echo "Error staging ${VARIANT} iPhone armv7. Check ${OUTPUT_DIR}/iphone-armv7-build.log"
             exit 1
         fi
     done
@@ -921,7 +926,7 @@ buildBoost_iOS()
             $IOS_SHARED_FLAGS install >> "${OUTPUT_DIR}/iphone-armv64-build.log" 2>&1
         if [ $? != 0 ]; then
             cat "${OUTPUT_DIR}/iphone-armv64-build.log"
-            echo "Error staging iPhone arm64. Check ${OUTPUT_DIR}/iphone-armv64-build.log"
+            echo "Error staging ${VARIANT} iPhone arm64. Check ${OUTPUT_DIR}/iphone-armv64-build.log"
             exit 1
         fi
     done
@@ -943,7 +948,7 @@ buildBoost_iOS()
             install >> "${OUTPUT_DIR}/iphonesimulator-i386-build.log" 2>&1
         if [ $? != 0 ]; then
             cat "${OUTPUT_DIR}/iphonesimulator-i386-build.log"
-            echo "Error staging i386 iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-i386-build.log"
+            echo "Error staging ${VARIANT} i386 iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-i386-build.log"
             exit 1
         fi
     done
@@ -963,7 +968,7 @@ buildBoost_iOS()
             install >> "${OUTPUT_DIR}/iphonesimulator-x86_64-build.log" 2>&1
         if [ $? != 0 ]; then
             cat "${OUTPUT_DIR}/iphonesimulator-x86_64-build.log"
-            echo "Error staging i386 iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-x86_64-build.log"
+            echo "Error staging ${VARIANT} x86_64 iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-x86_64-build.log"
             exit 1
         fi
     done
@@ -983,7 +988,7 @@ buildBoost_iOS()
             install >> "${OUTPUT_DIR}/iphonesimulator-arm64-build.log" 2>&1
         if [ $? != 0 ]; then
             cat "${OUTPUT_DIR}/iphonesimulator-arm64-build.log"
-            echo "Error staging arm64 iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-arm64-build.log"
+            echo "Error staging ${VARIANT} arm64 iPhoneSimulator. Check ${OUTPUT_DIR}/iphonesimulator-arm64-build.log"
             exit 1
         fi
     done
