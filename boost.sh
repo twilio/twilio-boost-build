@@ -55,13 +55,10 @@ REPO_URL="${BINTRAY_API_URL}/maven/${REPO_URL_FRAGMENT}/;publish=0"
 REPO_ID=bintray
 
 MIN_IOS_VERSION=10.0
-IOS_SDK_VERSION=`xcrun --sdk iphoneos --show-sdk-version`
 
 MIN_TVOS_VERSION=9.2
-TVOS_SDK_VERSION=`xcrun --sdk appletvos --show-sdk-version`
 
 MIN_OSX_VERSION=10.10
-OSX_SDK_VERSION=`xcrun --sdk macosx --show-sdk-version`
 
 OSX_ARCHS="x86_64 i386"
 OSX_ARCH_COUNT=0
@@ -88,9 +85,6 @@ IOS_SIM_DEV_CMD="xcrun --sdk iphonesimulator"
 TVOS_DEV_CMD="xcrun --sdk appletvos"
 TVOS_SIM_DEV_CMD="xcrun --sdk appletvsimulator"
 OSX_DEV_CMD="xcrun --sdk macosx"
-# MACOS_DEV_CMD="xcrun --sdk macosx"
-# MACOS_SILICON_DEV_CMD="xcrun --sdk macosx"
-# MAC_CATALYST_DEV_CMD="xcrun --sdk macosx"
 
 #===============================================================================
 # Functions
@@ -105,9 +99,7 @@ sdkVersion()
 
 IOS_SDK_VERSION=$(sdkVersion iphoneos)
 TVOS_SDK_VERSION=$(sdkVersion appletvos)
-MACOS_SDK_VERSION=$(sdkVersion macosx)
-MACOS_SILICON_SDK_VERSION=$(sdkVersion macosx)
-MAC_CATALYST_SDK_VERSION=$(sdkVersion macosx)
+OSX_SDK_VERSION=$(sdkVersion macosx)
 
 sdkPath()
 {
@@ -116,11 +108,6 @@ sdkPath()
 
 IOS_SDK_PATH=$(sdkPath iphoneos)
 IOSSIM_SDK_PATH=$(sdkPath iphonesimulator)
-TVOS_SDK_PATH=$(sdkPath appletvos)
-TVOSSIM_SDK_PATH=$(sdkPath appletvsimulator)
-MACOS_SDK_PATH=$(sdkPath macosx)
-MAC_CATALYST_SDK_PATH=$(sdkPath macosx)
-MACOS_SILICON_SDK_PATH=$(sdkPath macosx)
 
 usage()
 {
@@ -901,7 +888,7 @@ buildBoost_iOS()
             --libdir="$OUTPUT_DIR/lib/$VARIANT/iphoneos/armv7" \
             toolset=darwin-${IOS_SDK_VERSION}~iphone \
             variant=$VARIANT address-model=32 architecture=arm optimization=space \
-            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -mios-version-min=$MIN_IOS_VERSION" \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -isysroot ${IOS_SDK_PATH} -mios-version-min=$MIN_IOS_VERSION" \
             linkflags="-stdlib=libc++" \
             macosx-version=iphone-${IOS_SDK_VERSION} \
             $IOS_SHARED_FLAGS install >> "${OUTPUT_DIR}/iphone-armv7-build.log" 2>&1
@@ -920,7 +907,7 @@ buildBoost_iOS()
             --libdir="$OUTPUT_DIR/lib/$VARIANT/iphoneos/arm64" \
             toolset=darwin-${IOS_SDK_VERSION}~iphone \
             variant=$VARIANT address-model=64 architecture=arm optimization=space \
-            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -mios-version-min=$MIN_IOS_VERSION" \
+            cxxflags="${CXX_FLAGS} ${CPPSTD} -stdlib=libc++ -isysroot ${IOS_SDK_PATH} -mios-version-min=$MIN_IOS_VERSION" \
             linkflags="-stdlib=libc++" \
             macosx-version=iphone-${IOS_SDK_VERSION} \
             $IOS_SHARED_FLAGS install >> "${OUTPUT_DIR}/iphone-armv64-build.log" 2>&1
