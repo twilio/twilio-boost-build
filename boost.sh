@@ -71,6 +71,7 @@ done
 # Applied to all platforms
 CXX_FLAGS=""
 
+XCODE_VERSION=$(xcrun xcodebuild -version | head -n1 | tr -Cd '[:digit:].')
 XCODE_ROOT=`xcode-select -print-path`
 COMPILER="$XCODE_ROOT/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang++" 
 
@@ -476,6 +477,9 @@ applyPatches()
     (cd $BOOST_SRC; cat ${CURRENT_DIR}/patches/boost_${BOOST_VERSION2}*.patch | patch -p2) || echo "Patching failed"
 }
 
+# version() from https://stackoverflow.com/a/37939589/3938401
+version() { echo "$@" | awk -F. '{ printf("%d%03d%03d%03d\n", $1,$2,$3,$4); }'; }
+
 patchForXcode()
 {
   if [ "$(version "$BOOST_VERSION")" -le "$(version "1.73.0")" ] &&
@@ -488,7 +492,6 @@ patchForXcode()
 
       doneSection
   fi
-    
 }
 
 unpackBoost()
