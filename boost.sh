@@ -476,6 +476,21 @@ applyPatches()
     (cd $BOOST_SRC; cat ${CURRENT_DIR}/patches/boost_${BOOST_VERSION2}*.patch | patch -p2) || echo "Patching failed"
 }
 
+patchForXcode()
+{
+  if [ "$(version "$BOOST_VERSION")" -le "$(version "1.73.0")" ] &&
+     [ "$(version "$XCODE_VERSION")" -ge "$(version "11.4")" ]
+  then
+      echo "Patching boost in $BOOST_SRC"
+
+      # https://github.com/boostorg/build/pull/560
+      (cd "$BOOST_SRC" && patch --forward -p1 -d "$BOOST_SRC/tools/build" < "$CURRENT_DIR/patches/xcode-11.4.patch")
+
+      doneSection
+  fi
+    
+}
+
 unpackBoost()
 {
     [ -f "$BOOST_TARBALL" ] || abort "Source tarball missing."
@@ -868,6 +883,8 @@ buildBoost_Android()
 
 buildBoost_iOS()
 {
+    patchForXcode
+
     cd "$BOOST_SRC"
     mkdir -p $OUTPUT_DIR
     echo > ${OUTPUT_DIR}/iphone-armv7-build.log
@@ -987,6 +1004,8 @@ buildBoost_iOS()
 
 buildBoost_tvOS()
 {
+    patchForXcode
+
     cd "$BOOST_SRC"
     mkdir -p $OUTPUT_DIR
     echo > ${OUTPUT_DIR}/tvos-build.log
@@ -1027,6 +1046,8 @@ buildBoost_tvOS()
 
 buildBoost_OSX()
 {
+    patchForXcode
+
     cd "$BOOST_SRC"
     mkdir -p $OUTPUT_DIR
     echo > ${OUTPUT_DIR}/osx-build.log
