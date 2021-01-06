@@ -54,7 +54,7 @@ REPO_URL_FRAGMENT=twilio/releases/rtd-cpp-boost-lib
 REPO_URL="${BINTRAY_API_URL}/maven/${REPO_URL_FRAGMENT}/;publish=0"
 REPO_ID=bintray
 
-MIN_IOS_VERSION=10.0
+MIN_IOS_VERSION=9.0
 
 MIN_TVOS_VERSION=9.2
 
