@@ -26,6 +26,7 @@ aliases:
       boost-libs:
         description: "List of boost libraries to build"
         type: string
+        # We removed serialization as we need to be able to build for iOS 9 and there are code that is using iOS 10+ features
         default: "atomic context coroutine date_time exception iostreams program_options random regex system test thread"
   - pre-steps-parameter: &pre-steps-parameter
       pre-steps:
