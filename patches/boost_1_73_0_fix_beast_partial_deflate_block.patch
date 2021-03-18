@@ -1,5 +1,8 @@
+Backporting fixes for when a received deflate block spans multiple multi_byte character arrays when inflated.
+Reference: https://github.com/boostorg/beast/pull/2191
+
 --- a/1.73.0/boost/beast/websocket/impl/read.hpp	2021-03-17 15:42:22.000000000 -0700
-+++ b/1.73.0/boost/beast/websocket/impl/read.hpp	2021-03-17 19:33:59.000000000 -0700
++++ b/1.73.0/boost/beast/websocket/impl/read.hpp	2021-03-18 14:31:12.000000000 -0700
 @@ -471,6 +471,7 @@
                          zs.avail_out = out.size();
                          BOOST_ASSERT(zs.avail_out > 0);
@@ -37,30 +40,31 @@
                      impl.inflate(zs, zlib::Flush::sync, ec);
                      if(impl.check_stop_now(ec))
                          goto upcall;
-+                    if (fin) {
-+                        if (zs.total_out == 0) {
++                    if(fin)
++                        if(zs.total_out == 0)
++                        {
 +                            impl.do_context_takeover_read(impl.role);
 +                            impl.rd_done = true;
 +                            break;
 +                        }
-+                    }
                      if(impl.rd_msg_max && beast::detail::sum_exceeds(
                          impl.rd_size, zs.total_out, impl.rd_msg_max))
                      {
-@@ -524,8 +521,10 @@
+@@ -524,8 +521,11 @@
                      }
                      cb_.consume(zs.total_out);
                      impl.rd_size += zs.total_out;
 -                    impl.rd_remain -= zs.total_in;
 -                    impl.rd_buf.consume(zs.total_in);
-+                    if (!fin) {
++                    if(! fin)
++                    {
 +                        impl.rd_remain -= zs.total_in;
 +                        impl.rd_buf.consume(zs.total_in);
 +                    }
                      bytes_written_ += zs.total_out;
                  }
                  if(impl.rd_op == detail::opcode::text)
-@@ -1165,6 +1164,7 @@
+@@ -1165,6 +1165,7 @@
                  zs.avail_out = out.size();
                  BOOST_ASSERT(zs.avail_out > 0);
              }
@@ -68,7 +72,7 @@
              if(impl.rd_remain > 0)
              {
                  if(impl.rd_buf.size() > 0)
-@@ -1208,22 +1208,10 @@
+@@ -1208,22 +1209,10 @@
              {
                  // append the empty block codes
                  static std::uint8_t constexpr
@@ -93,27 +97,28 @@
              }
              else
              {
-@@ -1232,6 +1220,13 @@
+@@ -1232,6 +1221,13 @@
              impl.inflate(zs, zlib::Flush::sync, ec);
              if(impl.check_stop_now(ec))
                  return bytes_written;
-+            if (fin) {
-+                if (zs.total_out == 0) {
++            if(fin)
++                if(zs.total_out == 0)
++                {
 +                    impl.do_context_takeover_read(impl.role);
 +                    impl.rd_done = true;
 +                    break;
 +                }
-+            }
              if(impl.rd_msg_max && beast::detail::sum_exceeds(
                  impl.rd_size, zs.total_out, impl.rd_msg_max))
              {
-@@ -1241,8 +1236,10 @@
+@@ -1241,8 +1237,11 @@
              }
              cb.consume(zs.total_out);
              impl.rd_size += zs.total_out;
 -            impl.rd_remain -= zs.total_in;
 -            impl.rd_buf.consume(zs.total_in);
-+            if (!fin) {
++            if(! fin)
++            {
 +                impl.rd_remain -= zs.total_in;
 +                impl.rd_buf.consume(zs.total_in);
 +            }
