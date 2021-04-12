@@ -501,7 +501,7 @@ unpackBoost()
     echo Unpacking boost into "$SRCDIR"...
 
     [ -d $SRCDIR ]    || mkdir -p "$SRCDIR"
-    [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xfj "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
+    [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xfz "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
     echo "    ...unpacked as $BOOST_SRC"
 
     changeNamespace
