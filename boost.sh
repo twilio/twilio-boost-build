@@ -49,10 +49,8 @@ ASYNC_COMMIT=94fe4433287df569ce1aa384b248793552980711
 
 TWILIO_SUFFIX=
 
-BINTRAY_API_URL=https://api.bintray.com
-REPO_URL_FRAGMENT=twilio/releases/rtd-cpp-boost-lib
-REPO_URL="${BINTRAY_API_URL}/maven/${REPO_URL_FRAGMENT}/;publish=0"
-REPO_ID=bintray
+REPO_URL="https://twilio.jfrog.io/artifactory/releases/"
+REPO_ID=artifactory
 
 MIN_IOS_VERSION=9.0
 
@@ -157,7 +155,7 @@ OPTIONS:
         Do not download or unpack anything. Use local unpacked copy.
 
     --deploy
-        Only send request to bintray to mark packages published. Do nothing else.
+        Only send request to artifactory to mark packages published. Do nothing else.
 
     --boost-version [num]
         Specify which version of Boost to build. Defaults to $BOOST_VERSION.
@@ -1232,14 +1230,14 @@ deployPlat()
     done
 }
 
-deployToBintray()
+deployToArtifactory()
 {
     if [[ -z "$REPO_ID" ]]; then
         abort "Specify REPO_ID to deploy"
     fi
 
     BUILDDIR="$CURRENT_DIR/target/distributions"
-    SETTINGS_FILE="-s $CURRENT_DIR/bintray-settings.xml"
+    SETTINGS_FILE="-s $CURRENT_DIR/artifactory-settings.xml"
     deployFile boost-headers "${BUILDDIR}/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
     deployPlat "android" "$BUILDDIR"
     deployPlat "ios" "$BUILDDIR"
@@ -1669,7 +1667,7 @@ if [[ -n $BUILD_IOS || -n $BUILD_TVOS || -n $BUILD_OSX || -n $BUILD_ANDROID \
 fi
 
 if [[ -n "$DEPLOY" ]]; then
-    deployToBintray
+    deployToArtifactory
 fi
 
 echo "Completed successfully"
