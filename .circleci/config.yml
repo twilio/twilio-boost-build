@@ -201,9 +201,9 @@ jobs:
             - prepare_macos_ios:
                 cache-tag: xcode12
 
-  deploy-bintray:
+  deploy-artifactory:
     executor: linux-executor
-    description: "Deploy binaries to bintray"
+    description: "Deploy binaries to artifactory"
     parameters:
       <<: *boost-libs-parameter
     steps:
@@ -213,9 +213,9 @@ jobs:
       - generate_build_settings
       - run: #generate_maven_settings
           name: Generate Maven settings
-          command: echo "$BINTRAY_SETTINGS" | base64 --decode > bintray-settings.xml
+          command: echo "$ARTIFACTORY_SETTINGS" | base64 --decode > artifactory-settings.xml
       - run:
-          name: Deploy binaries to bintray
+          name: Deploy binaries to artifactory
           command: |
             source $BASH_ENV
             ./boost.sh --no-clean --no-unpack --no-framework --deploy `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
@@ -259,7 +259,7 @@ workflows:
           name: build-boost-osx
           requires:
             - unpack
-      - deploy-bintray:
+      - deploy-artifactory:
           <<: *only-release-tags
           name: deploy
           requires:
