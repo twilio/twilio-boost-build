@@ -259,7 +259,7 @@ parseArgs()
                     BOOST_VERSION=$2
                     BOOST_VERSION2="${BOOST_VERSION/beta./b}"
                     BOOST_VERSION2="${BOOST_VERSION2//./_}"
-                    BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
+                    BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.gz"
                     BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
                     shift
                 else
@@ -451,7 +451,7 @@ downloadBoost()
     mkdir -p "$(dirname $BOOST_TARBALL)"
 
     if [ ! -s $BOOST_TARBALL ]; then
-        URL=https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION2}.tar.bz2
+        URL=https://github.com/boostorg/boost/archive/refs/tags/boost-${BOOST_VERSION}.tar.gz
         echo "Downloading boost ${BOOST_VERSION} from $URL"
         curl -L -o "$BOOST_TARBALL" $URL
         doneSection
@@ -1515,8 +1515,8 @@ EOF
 parseArgs "$@"
 
 if [[ -z $BOOST_VERSION ]]; then
-    BOOST_VERSION=`curl -s 'https://www.boost.org' | sed -n 's/.*https:\/\/dl\.bintray\.com\/boostorg\/release\/\([^\/]*\)\/.*$/\1/p'`
-    echo "Detecting the latest boost version from https://www.boost.org to be version $BOOST_VERSION"
+    BOOST_VERSION=`curl -s 'https://github.com/boostorg/boost/releases' | grep -o "\/boostorg\/boost\/releases\/tag\/boost-\(\d\+\.\d\+\.\d\+\)\"" | cut -d"-" -f2 | cut -d"\"" -f1 | head -1`
+    echo "Detecting the latest boost version from https://github.com/boostorg/boost/releases to be version $BOOST_VERSION"
     BOOST_VERSION2="${BOOST_VERSION//./_}"
     BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
     BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
