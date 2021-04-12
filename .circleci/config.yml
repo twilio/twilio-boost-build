@@ -260,7 +260,7 @@ workflows:
           requires:
             - unpack
       - deploy-artifactory:
-          <<: *only-release-tags
+          <<: *ignore-master
           name: deploy
           requires:
             - build-boost-headers

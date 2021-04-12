@@ -47,7 +47,7 @@ DEPLOY=
 
 ASYNC_COMMIT=94fe4433287df569ce1aa384b248793552980711
 
-TWILIO_SUFFIX=
+TWILIO_SUFFIX=99
 
 REPO_URL="https://twilio.jfrog.io/artifactory/releases/"
 REPO_ID=artifactory
