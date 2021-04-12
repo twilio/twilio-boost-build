@@ -1515,7 +1515,7 @@ EOF
 parseArgs "$@"
 
 if [[ -z $BOOST_VERSION ]]; then
-    BOOST_VERSION=`curl -s 'https://github.com/boostorg/boost/releases' | grep -o "\/boostorg\/boost\/releases\/tag\/boost-\(\d\+\.\d\+\.\d\+\)\"" | cut -d"-" -f2 | cut -d"\"" -f1 | head -1`
+    BOOST_VERSION=`curl -s 'https://github.com/boostorg/boost/releases' | grep -o "\/boostorg\/boost\/releases\/tag\/boost-\([0-9]\+\.[0-9]\+\.[0-9]\+\)\"" | cut -d"-" -f2 | cut -d"\"" -f1 | head -1`
     echo "Detecting the latest boost version from https://github.com/boostorg/boost/releases to be version $BOOST_VERSION"
     BOOST_VERSION2="${BOOST_VERSION//./_}"
     BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.gz"
