@@ -49,10 +49,8 @@ ASYNC_COMMIT=94fe4433287df569ce1aa384b248793552980711
 
 TWILIO_SUFFIX=
 
-BINTRAY_API_URL=https://api.bintray.com
-REPO_URL_FRAGMENT=twilio/releases/rtd-cpp-boost-lib
-REPO_URL="${BINTRAY_API_URL}/maven/${REPO_URL_FRAGMENT}/;publish=0"
-REPO_ID=bintray
+REPO_URL="https://twilio.jfrog.io/artifactory/releases/"
+REPO_ID=artifactory
 
 MIN_IOS_VERSION=9.0
 
@@ -157,7 +155,7 @@ OPTIONS:
         Do not download or unpack anything. Use local unpacked copy.
 
     --deploy
-        Only send request to bintray to mark packages published. Do nothing else.
+        Only send request to artifactory to mark packages published. Do nothing else.
 
     --boost-version [num]
         Specify which version of Boost to build. Defaults to $BOOST_VERSION.
@@ -451,7 +449,7 @@ downloadBoost()
     mkdir -p "$(dirname $BOOST_TARBALL)"
 
     if [ ! -s $BOOST_TARBALL ]; then
-        URL=https://dl.bintray.com/boostorg/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION2}.tar.bz2
+        URL=https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION2}.tar.bz2
         echo "Downloading boost ${BOOST_VERSION} from $URL"
         curl -L -o "$BOOST_TARBALL" $URL
         doneSection
@@ -1232,14 +1230,14 @@ deployPlat()
     done
 }
 
-deployToBintray()
+deployToArtifactory()
 {
     if [[ -z "$REPO_ID" ]]; then
         abort "Specify REPO_ID to deploy"
     fi
 
     BUILDDIR="$CURRENT_DIR/target/distributions"
-    SETTINGS_FILE="-s $CURRENT_DIR/bintray-settings.xml"
+    SETTINGS_FILE="-s $CURRENT_DIR/artifactory-settings.xml"
     deployFile boost-headers "${BUILDDIR}/boost-headers-${BOOST_VERSION}${TWILIO_SUFFIX}-all.tar.bz2" all ${BOOST_VERSION}${TWILIO_SUFFIX}
     deployPlat "android" "$BUILDDIR"
     deployPlat "ios" "$BUILDDIR"
@@ -1515,8 +1513,8 @@ EOF
 parseArgs "$@"
 
 if [[ -z $BOOST_VERSION ]]; then
-    BOOST_VERSION=`curl -s 'https://www.boost.org' | sed -n 's/.*https:\/\/dl\.bintray\.com\/boostorg\/release\/\([^\/]*\)\/.*$/\1/p'`
-    echo "Detecting the latest boost version from https://www.boost.org to be version $BOOST_VERSION"
+    BOOST_VERSION=`curl -s 'https://github.com/boostorg/boost/releases' | grep -o "\/boostorg\/boost\/releases\/tag\/boost-\([0-9]\+\.[0-9]\+\.[0-9]\+\)\"" | cut -d"-" -f2 | cut -d"\"" -f1 | head -1`
+    echo "Detecting the latest boost version from https://github.com/boostorg/boost/releases to be version $BOOST_VERSION"
     BOOST_VERSION2="${BOOST_VERSION//./_}"
     BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
     BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
@@ -1669,7 +1667,7 @@ if [[ -n $BUILD_IOS || -n $BUILD_TVOS || -n $BUILD_OSX || -n $BUILD_ANDROID \
 fi
 
 if [[ -n "$DEPLOY" ]]; then
-    deployToBintray
+    deployToArtifactory
 fi
 
 echo "Completed successfully"
