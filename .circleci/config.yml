@@ -175,24 +175,32 @@ jobs:
     steps:
       - build:
           platform: headers
+      - store_artifacts:
+          path: /root/twilio-boost-build/target/outputs/boost
 
   build-linux:
     executor: linux-executor
     steps:
       - build:
           platform: linux
+      - store_artifacts:
+          path: /root/twilio-boost-build/target/outputs/boost
 
   build-linux-cxx11-abi-disabled:
     executor: linux-executor
     steps:
       - build:
           platform: linux-cxx11-abi-disabled
+      - store_artifacts:
+          path: /root/twilio-boost-build/target/outputs/boost
 
   build-android:
     executor: android-executor
     steps:
       - build:
           platform: android
+      - store_artifacts:
+          path: /root/twilio-boost-build/target/outputs/boost
 
   build-osx:
     executor: macos-ios-executor
@@ -227,11 +235,11 @@ jobs:
           command: echo "$ARTIFACTORY_SETTINGS" | base64 --decode > artifactory-settings.xml
       - run:
           name: Deploy binaries to artifactory
+          no_output_timeout: 120m
           command: |
             source $BASH_ENV
             ./boost.sh --no-clean --no-unpack --no-framework --deploy `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
               `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< parameters.boost-libs >>"
-          no_output_timeout: 120m
 
 workflows:
   version: 2

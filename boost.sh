@@ -1079,49 +1079,21 @@ buildBoost_Linux()
     echo > ${OUTPUT_DIR}/linux-build.log
 
     # intel
-    for BITS in 64 32; do
-        for VARIANT in debug release; do
-            echo Building $VARIANT intel $BITS-bit Boost for Linux
-
-            if [[ $BITS == 64 ]]; then
-                LIBDIR_SUFFIX=x86_64
-            else
-                LIBDIR_SUFFIX=x86
-            fi
-
-            ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
-                --prefix="$OUTPUT_DIR" \
-                --libdir="$OUTPUT_DIR/lib/$VARIANT/$LIBDIR_SUFFIX" \
-                address-model=$BITS variant=$VARIANT \
-                optimization=speed \
-                cxxflags="${CXX_FLAGS} ${CPPSTD}" \
-                link=static threading=multi \
-                install >> "${OUTPUT_DIR}/linux-build.log" 2>&1
-            if [ $? != 0 ]; then echo "Error staging Linux. Check ${OUTPUT_DIR}/linux-build.log"; exit 1; fi
-        done
-    done
-
-    # arm
+    BITS=64
     for VARIANT in debug release; do
-        echo Building $VARIANT arm_gnueabihf Boost for Linux
+        echo Building $VARIANT intel $BITS-bit Boost for Linux
 
-        LIBDIR_SUFFIX=arm_gnueabihf
-        ARCH=arm
-        TOOLSET=gcc-8.3.0~arm
-        ABI=aapcs
+        LIBDIR_SUFFIX=x86_64
 
-        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=$TOOLSET \
+        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
             --prefix="$OUTPUT_DIR" \
             --libdir="$OUTPUT_DIR/lib/$VARIANT/$LIBDIR_SUFFIX" \
             address-model=$BITS variant=$VARIANT \
-            architecture=$ARCH \
-            binary-format=elf \
-            abi=$ABI \
-            optimization=space \
+            optimization=speed \
             cxxflags="${CXX_FLAGS} ${CPPSTD}" \
             link=static threading=multi \
             install >> "${OUTPUT_DIR}/linux-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging Linux. Check ${OUTPUT_DIR}/linux-build.log"; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging Linux ${BITS}-bit. Check ${OUTPUT_DIR}/linux-build.log"; exit 1; fi
     done
 
     doneSection
