@@ -1,5 +1,11 @@
 version: 2.1
 
+parameters:
+  twilio-video-sdk-toolchain-image:
+    description: twilio-video-sdk-toolchain docker image to use for linux and android
+    type: string
+    default: "twilio/twilio-video-sdk-toolchain:edb23a0c29310a9f56aad430bfebd8bea232e11d"
+
 aliases:
   - &workspace
     ~/twilio-boost-build
@@ -56,7 +62,7 @@ executors:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
   android-executor:
     docker:
-      - image: twilio/twilio-video-sdk-toolchain:1da717d4f4403cb9b68169fe2256b6d1b2c93694
+      - image: << pipeline.parameters.twilio-video-sdk-toolchain-image >>
         auth:
           username: $DOCKER_HUB_USERNAME
           password: $DOCKER_HUB_PASSWORD
