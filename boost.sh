@@ -724,24 +724,6 @@ using gcc : : g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
 <compileflags>-Wall
 <compileflags>-Wshadow
 ;
-using gcc : 8.3.0~arm
-: arm-linux-gnueabihf-g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
-:
-<architecture>arm <target-os>linux
-<compileflags>-isystem <compileflags>/usr/include/arm-linux-gnueabihf/
-<compileflags>-ffunction-sections
-<compileflags>-fPIC
-<compileflags>-fno-omit-frame-pointer
-<compileflags>-march=armv7-a
-<compileflags>-mfloat-abi=hard
-<compileflags>-mtune=generic-armv7-a
-<compileflags>-mfpu=neon
-<compileflags>-mthumb
-<compileflags>-Wformat
-<compileflags>-Werror=format-security
-<compileflags>-Wall
-<compileflags>-Wshadow
-;
 EOF
 }
 
