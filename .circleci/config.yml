@@ -9,7 +9,7 @@ parameters:
   twilio-video-sdk-toolchain-image:
     description: twilio-video-sdk-toolchain docker image to use for linux and android
     type: string
-    default: "twilio/twilio-video-sdk-toolchain:edb23a0c29310a9f56aad430bfebd8bea232e11d"
+    default: "twilio/twilio-video-sdk-toolchain:17"
 
 aliases:
   - &workspace
@@ -57,16 +57,6 @@ aliases:
 executors:
   linux-executor:
     docker:
-      - image: cibuilderbot/docker-circleci-linux-android
-        auth:
-          username: $DOCKER_HUB_USERNAME
-          password: $DOCKER_HUB_PASSWORD
-    resource_class: xlarge
-    working_directory: *workspace
-    environment:
-      CMAKE_BUILD_PARALLEL_LEVEL: 2
-  android-executor:
-    docker:
       - image: << pipeline.parameters.twilio-video-sdk-toolchain-image >>
         auth:
           username: $DOCKER_HUB_USERNAME
@@ -75,10 +65,10 @@ executors:
     working_directory: *workspace
     environment:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
-  macos-ios-executor:
+  mac-executor:
     macos:
       xcode: << pipeline.parameters.xcode-version >>
-    resource_class: large
+    resource_class: macos.x86.medium.gen2
     working_directory: *workspace
 
 commands:
@@ -138,9 +128,7 @@ commands:
   build:
     description: "Build and Publish"
     parameters:
-      <<: *platform-parameter
-      <<: *boost-libs-parameter
-      <<: *pre-steps-parameter
+      <<: [*platform-parameter, *boost-libs-parameter, *pre-steps-parameter]
     steps:
       - checkout
       - steps: << parameters.pre-steps >>
@@ -195,7 +183,7 @@ jobs:
           path: /root/twilio-boost-build/target/outputs/boost
 
   build-android:
-    executor: android-executor
+    executor: linux-executor
     steps:
       - build:
           platform: android
@@ -203,7 +191,7 @@ jobs:
           path: /root/twilio-boost-build/target/outputs/boost
 
   build-osx:
-    executor: macos-ios-executor
+    executor: mac-executor
     steps:
       - build:
           platform: osx
@@ -212,7 +200,7 @@ jobs:
                 cache-tag: << pipeline.parameters.xcode-version >>
 
   build-ios:
-    executor: macos-ios-executor
+    executor: mac-executor
     steps:
       - build:
           platform: ios
