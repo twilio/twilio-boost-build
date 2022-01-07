@@ -61,7 +61,7 @@ executors:
         auth:
           username: $DOCKER_HUB_USERNAME
           password: $DOCKER_HUB_PASSWORD
-    resource_class: xlarge
+    resource_class: medium+
     working_directory: *workspace
     environment:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
@@ -93,9 +93,9 @@ commands:
         description: "Cache tag"
         type: string
     steps:
-      - restore_cache:
-          keys:
-            - v4-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
+#      - restore_cache:
+#          keys:
+#            - v4-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Install necessary components through Homebrew"
           command: |
@@ -103,10 +103,10 @@ commands:
             brew install maven
             brew install boost-bcp
             brew install rsync
-      - save_cache:
-          key: v4-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
-          paths:
-            - /usr/local/Homebrew
+#      - save_cache:
+#          key: v4-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
+#          paths:
+#            - /usr/local/Homebrew
 
   unpack:
     description: "Unpack boost tarball"
@@ -151,15 +151,21 @@ commands:
 
 jobs:
   unpack-sources:
-    executor: linux-executor
+    executor:
+      name: linux-executor
+      resource_class: small
     steps:
       - run:
           name: apt install
-          command: apt -y --no-install-recommends install libboost-tools-dev rsync
+          command: |
+            apt-get -y update
+            apt-get -y --no-install-recommends install libboost-tools-dev
       - unpack
 
   build-headers:
-    executor: linux-executor
+    executor:
+      name: linux-executor
+      resource_class: small
     steps:
       - build:
           platform: headers
