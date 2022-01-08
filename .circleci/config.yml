@@ -14,41 +14,46 @@ parameters:
 aliases:
   - &workspace
     ~/twilio-boost-build
-  - &build_output
-    ~/twilio-boost-build/target/output
+
   - ignore-master: &ignore-master
       filters:
         tags:
           only: /.*/
         branches:
           ignore: /^master/
+
   - only-release-tags: &only-release-tags
       filters:
         tags:
           only: /^release-.*/
         branches:
           ignore: /.*/
+
   - platform-parameter: &platform-parameter
       platform:
         description: "Platform to build"
         type: enum
         enum: ["headers", "android", "linux", "linux-cxx11-abi-disabled", "ios", "osx"]
+
   - boost-libs-parameter: &boost-libs-parameter
       boost-libs:
         description: "List of boost libraries to build"
         type: string
         # We removed serialization as we need to be able to build for iOS 9 and there are code that is using iOS 10+ features
         default: "atomic context coroutine date_time exception iostreams program_options random regex system test thread"
+
   - pre-steps-parameter: &pre-steps-parameter
       pre-steps:
         description: "Steps that will be executed before build starts"
         type: steps
         default: []
+
   - post-steps-parameter: &post-steps-parameter
       post-steps:
         description: "Steps that will be executed after build ends"
         type: steps
         default: []
+
   - build-steps-parameter: &build-steps-parameter
       build-steps:
         description: "Steps that will be executed as main build target"
@@ -70,6 +75,7 @@ executors:
     working_directory: *workspace
     environment:
       CMAKE_BUILD_PARALLEL_LEVEL: 2
+
   mac-executor:
     macos:
       xcode: << pipeline.parameters.xcode-version >>
@@ -92,15 +98,8 @@ commands:
             fi
 
   prepare_macos_ios:
-    description: "Prepare environment for MacOS and iOS builds (cache enabled)"
-    parameters:
-      cache-tag:
-        description: "Cache tag"
-        type: string
+    description: "Prepare environment for MacOS and iOS builds"
     steps:
-#      - restore_cache:
-#          keys:
-#            - v4-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
       - run:
           name: "Install necessary components through Homebrew"
           command: |
@@ -108,10 +107,6 @@ commands:
             brew install maven
             brew install boost-bcp
             brew install rsync
-#      - save_cache:
-#          key: v4-homebrew-<< parameters.cache-tag >>-{{ checksum ".circleci/config.yml" }}
-#          paths:
-#            - /usr/local/Homebrew
 
   unpack:
     description: "Unpack boost tarball"
@@ -167,61 +162,35 @@ jobs:
             apt-get -y --no-install-recommends install libboost-tools-dev
       - unpack
 
-  build-headers:
+  build-on-linux:
+    parameters:
+      platform:
+        type: enum
+        enum: [ headers, linux, linux-cxx11-abi-disabled, android ]
+    executor:
+      name: linux-executor
+      resource-class: medium+
+    steps:
+      - build:
+          platform: << parameters.platform >>
+
+  build-on-mac:
+    parameters:
+      platform:
+        type: enum
+        enum: [ osx, ios ]
+    executor: mac-executor
+    steps:
+      - build:
+          platform: << parameters.platform >>
+          pre-steps:
+            - prepare_macos_ios
+
+  deploy-artifactory:
+    description: "Deploy binaries to artifactory"
     executor:
       name: linux-executor
       resource-class: small
-    steps:
-      - build:
-          platform: headers
-      - store_artifacts:
-          path: /root/twilio-boost-build/target/outputs/boost
-
-  build-linux:
-    executor: linux-executor
-    steps:
-      - build:
-          platform: linux
-      - store_artifacts:
-          path: /root/twilio-boost-build/target/outputs/boost
-
-  build-linux-cxx11-abi-disabled:
-    executor: linux-executor
-    steps:
-      - build:
-          platform: linux-cxx11-abi-disabled
-      - store_artifacts:
-          path: /root/twilio-boost-build/target/outputs/boost
-
-  build-android:
-    executor: linux-executor
-    steps:
-      - build:
-          platform: android
-      - store_artifacts:
-          path: /root/twilio-boost-build/target/outputs/boost
-
-  build-osx:
-    executor: mac-executor
-    steps:
-      - build:
-          platform: osx
-          pre-steps:
-            - prepare_macos_ios:
-                cache-tag: << pipeline.parameters.xcode-version >>
-
-  build-ios:
-    executor: mac-executor
-    steps:
-      - build:
-          platform: ios
-          pre-steps:
-            - prepare_macos_ios:
-                cache-tag: << pipeline.parameters.xcode-version >>
-
-  deploy-artifactory:
-    executor: linux-executor
-    description: "Deploy binaries to artifactory"
     parameters:
       <<: *boost-libs-parameter
     steps:
@@ -241,55 +210,36 @@ jobs:
               `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< parameters.boost-libs >>"
 
 workflows:
-  version: 2
   build-and-deploy:
     jobs:
       - unpack-sources:
           <<: *ignore-master
           name: unpack
           context: dockerhub-pulls
-      - build-headers:
+
+      - build-on-linux:
           <<: *ignore-master
-          name: build-boost-headers
+          name: build-boost-<< matrix.platform >>
           context: dockerhub-pulls
           requires:
             - unpack
-      - build-android:
+          matrix:
+            parameters:
+              platform: [ headers, linux, linux-cxx11-abi-disabled, android ]
+
+      - build-on-mac:
           <<: *ignore-master
-          name: build-boost-android
-          context: dockerhub-pulls
+          name: build-boost-<< matrix.platform >>
           requires:
             - unpack
-      - build-linux:
-          <<: *ignore-master
-          name: build-boost-linux
-          context: dockerhub-pulls
-          requires:
-            - unpack
-      - build-linux-cxx11-abi-disabled:
-          <<: *ignore-master
-          name: build-boost-linux-cxx11-abi-disabled
-          context: dockerhub-pulls
-          requires:
-            - unpack
-      - build-ios:
-          <<: *ignore-master
-          name: build-boost-ios
-          requires:
-            - unpack
-      - build-osx:
-          <<: *ignore-master
-          name: build-boost-osx
-          requires:
-            - unpack
+          matrix:
+            parameters:
+              platform: [ ios, osx ]
+
       - deploy-artifactory:
           <<: *only-release-tags
           name: deploy
           context: dockerhub-pulls
           requires:
-            - build-boost-headers
-            - build-boost-android
-            - build-boost-linux
-            - build-boost-linux-cxx11-abi-disabled
-            - build-boost-ios
-            - build-boost-osx
+            - build-on-linux
+            - build-on-mac
