@@ -1,6 +1,12 @@
 version: 2.1
 
 parameters:
+  boost-libs:
+    description: "List of boost libraries to build"
+    type: string
+    # We removed serialization as we need to be able to build for iOS 9 and there are code that is using iOS 10+ features
+    default: "atomic context coroutine date_time exception iostreams program_options random regex system test thread"
+
   xcode-version:
     description: Xcode version for iOS and Darwin builds
     type: string
@@ -29,36 +35,6 @@ aliases:
         branches:
           ignore: /.*/
 
-  - platform-parameter: &platform-parameter
-      platform:
-        description: "Platform to build"
-        type: enum
-        enum: ["headers", "android", "linux", "linux-cxx11-abi-disabled", "ios", "osx"]
-
-  - boost-libs-parameter: &boost-libs-parameter
-      boost-libs:
-        description: "List of boost libraries to build"
-        type: string
-        # We removed serialization as we need to be able to build for iOS 9 and there are code that is using iOS 10+ features
-        default: "atomic context coroutine date_time exception iostreams program_options random regex system test thread"
-
-  - pre-steps-parameter: &pre-steps-parameter
-      pre-steps:
-        description: "Steps that will be executed before build starts"
-        type: steps
-        default: []
-
-  - post-steps-parameter: &post-steps-parameter
-      post-steps:
-        description: "Steps that will be executed after build ends"
-        type: steps
-        default: []
-
-  - build-steps-parameter: &build-steps-parameter
-      build-steps:
-        description: "Steps that will be executed as main build target"
-        type: steps
-
 executors:
   linux-executor:
     parameters:
@@ -84,29 +60,37 @@ executors:
 
 commands:
   generate_build_settings:
-    description: "Generate build env variables"
+    description: "Parse tag to determine boost version and twilio suffix"
     steps:
       - run:
-          name: Make env variables from build tag
+          name: Parse build tag
           command: |
             if [ -z "$CIRCLE_TAG" ]; then
               echo "Must use release tag to build boost releases. Push \`release-1.71.0-twilio3\`-style tag to trigger."
-              touch $BASH_ENV
+              echo "Will attempt to build with the latest boost version."
             else
-              echo 'export BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)' >> $BASH_ENV
-              echo 'export TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)' >> $BASH_ENV
+              BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)
+              if [[ "$BOOST_VERSION" == "" ]; then
+                echo "Failed to parse boost version from tag: $CIRCLE_TAG"
+                echo "Expected format: \`release-1.71.0-twilio3\`"
+                exit 1
+              fi
+              echo BOOST_VERSION=$BOOST_VERSION
+
+              TWILIO_SUFFIX=$(echo $CIRCLE_TAG | cut -d - -f 3)
+              echo TWILIO_SUFFIX=$TWILIO_SUFFIX
+
+              echo "export BOOST_VERSION=$BOOST_VERSION" >> $BASH_ENV
+              echo "export TWILIO_SUFFIX=$TWILIO_SUFFIX" >> $BASH_ENV
             fi
 
-  prepare_macos_ios:
+  install_mac_buildtools:
     description: "Prepare environment for MacOS and iOS builds"
     steps:
       - run:
-          name: "Install necessary components through Homebrew"
+          name: "Run brew install"
           command: |
-            brew update
-            brew install maven
-            brew install boost-bcp
-            brew install rsync
+            HOMEBREW_NO_AUTO_UPDATE=1 brew install maven boost-bcp rsync
 
   unpack:
     description: "Unpack boost tarball"
@@ -116,7 +100,9 @@ commands:
       - run:
           name: Unpack tarball
           command: |
-            source $BASH_ENV
+            echo BOOST_VERSION=$BOOST_VERSION
+            echo TWILIO_SUFFIX=$TWILIO_SUFFIX
+
             ./boost.sh --unpack `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
               `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX`
           no_output_timeout: 120m
@@ -128,19 +114,23 @@ commands:
   build:
     description: "Build and Publish"
     parameters:
-      <<: [*platform-parameter, *boost-libs-parameter, *pre-steps-parameter]
+      platform:
+        description: "Platform to build"
+        type: enum
+        enum: [ headers, android, linux, linux-cxx11-abi-disabled, ios, osx ]
     steps:
       - checkout
-      - steps: << parameters.pre-steps >>
       - attach_workspace:
           at: *workspace
       - generate_build_settings
       - run:
           name: Build << parameters.platform >>
           command: |
-            source $BASH_ENV
+            echo BOOST_VERSION=$BOOST_VERSION
+            echo TWILIO_SUFFIX=$TWILIO_SUFFIX
+
             ./boost.sh -<< parameters.platform >> --no-clean --no-unpack --no-framework `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
-              `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< parameters.boost-libs >>"
+              `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< pipeline.parameters.boost-libs >>"
           no_output_timeout: 120m
       - persist_to_workspace:
           root: .
@@ -181,18 +171,15 @@ jobs:
         enum: [ osx, ios ]
     executor: mac-executor
     steps:
+      - install_mac_buildtools
       - build:
           platform: << parameters.platform >>
-          pre-steps:
-            - prepare_macos_ios
 
   deploy-artifactory:
     description: "Deploy binaries to artifactory"
     executor:
       name: linux-executor
       resource-class: small
-    parameters:
-      <<: *boost-libs-parameter
     steps:
       - checkout
       - attach_workspace:
@@ -207,7 +194,7 @@ jobs:
           command: |
             source $BASH_ENV
             ./boost.sh --no-clean --no-unpack --no-framework --deploy `test -n "${BOOST_VERSION:-}" && echo --boost-version $BOOST_VERSION` \
-              `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< parameters.boost-libs >>"
+              `test -n "${TWILIO_SUFFIX:-}" && echo --twilio-suffix -$TWILIO_SUFFIX` --boost-libs "<< pipeline.parameters.boost-libs >>"
 
 workflows:
   build-and-deploy:
