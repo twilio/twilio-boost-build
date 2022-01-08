@@ -70,7 +70,7 @@ commands:
               echo "Will attempt to build with the latest boost version."
             else
               BOOST_VERSION=$(echo $CIRCLE_TAG | cut -d - -f 2)
-              if [[ "$BOOST_VERSION" == "" ]; then
+              if [[ "$BOOST_VERSION" == "" ]]; then
                 echo "Failed to parse boost version from tag: $CIRCLE_TAG"
                 echo "Expected format: \`release-1.71.0-twilio3\`"
                 exit 1
