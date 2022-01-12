@@ -724,24 +724,6 @@ using gcc : : g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
 <compileflags>-Wall
 <compileflags>-Wshadow
 ;
-using gcc : 8.3.0~arm
-: arm-linux-gnueabihf-g++ $LINUX_ARCH_FLAGS $EXTRA_LINUX_FLAGS
-:
-<architecture>arm <target-os>linux
-<compileflags>-isystem <compileflags>/usr/include/arm-linux-gnueabihf/
-<compileflags>-ffunction-sections
-<compileflags>-fPIC
-<compileflags>-fno-omit-frame-pointer
-<compileflags>-march=armv7-a
-<compileflags>-mfloat-abi=hard
-<compileflags>-mtune=generic-armv7-a
-<compileflags>-mfpu=neon
-<compileflags>-mthumb
-<compileflags>-Wformat
-<compileflags>-Werror=format-security
-<compileflags>-Wall
-<compileflags>-Wshadow
-;
 EOF
 }
 
@@ -1079,49 +1061,21 @@ buildBoost_Linux()
     echo > ${OUTPUT_DIR}/linux-build.log
 
     # intel
-    for BITS in 64 32; do
-        for VARIANT in debug release; do
-            echo Building $VARIANT intel $BITS-bit Boost for Linux
-
-            if [[ $BITS == 64 ]]; then
-                LIBDIR_SUFFIX=x86_64
-            else
-                LIBDIR_SUFFIX=x86
-            fi
-
-            ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
-                --prefix="$OUTPUT_DIR" \
-                --libdir="$OUTPUT_DIR/lib/$VARIANT/$LIBDIR_SUFFIX" \
-                address-model=$BITS variant=$VARIANT \
-                optimization=speed \
-                cxxflags="${CXX_FLAGS} ${CPPSTD}" \
-                link=static threading=multi \
-                install >> "${OUTPUT_DIR}/linux-build.log" 2>&1
-            if [ $? != 0 ]; then echo "Error staging Linux. Check ${OUTPUT_DIR}/linux-build.log"; exit 1; fi
-        done
-    done
-
-    # arm
+    BITS=64
     for VARIANT in debug release; do
-        echo Building $VARIANT arm_gnueabihf Boost for Linux
+        echo Building $VARIANT intel $BITS-bit Boost for Linux
 
-        LIBDIR_SUFFIX=arm_gnueabihf
-        ARCH=arm
-        TOOLSET=gcc-8.3.0~arm
-        ABI=aapcs
+        LIBDIR_SUFFIX=x86_64
 
-        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=$TOOLSET \
+        ./b2 $THREADS --build-dir=linux-build --stagedir=linux-build/stage toolset=gcc \
             --prefix="$OUTPUT_DIR" \
             --libdir="$OUTPUT_DIR/lib/$VARIANT/$LIBDIR_SUFFIX" \
             address-model=$BITS variant=$VARIANT \
-            architecture=$ARCH \
-            binary-format=elf \
-            abi=$ABI \
-            optimization=space \
+            optimization=speed \
             cxxflags="${CXX_FLAGS} ${CPPSTD}" \
             link=static threading=multi \
             install >> "${OUTPUT_DIR}/linux-build.log" 2>&1
-        if [ $? != 0 ]; then echo "Error staging Linux. Check ${OUTPUT_DIR}/linux-build.log"; exit 1; fi
+        if [ $? != 0 ]; then echo "Error staging Linux ${BITS}-bit. Check ${OUTPUT_DIR}/linux-build.log"; exit 1; fi
     done
 
     doneSection
@@ -1513,8 +1467,12 @@ EOF
 parseArgs "$@"
 
 if [[ -z $BOOST_VERSION ]]; then
-    BOOST_VERSION=`curl -s 'https://github.com/boostorg/boost/releases' | grep -o "\/boostorg\/boost\/releases\/tag\/boost-\([0-9]\+\.[0-9]\+\.[0-9]\+\)\"" | cut -d"-" -f2 | cut -d"\"" -f1 | head -1`
-    echo "Detecting the latest boost version from https://github.com/boostorg/boost/releases to be version $BOOST_VERSION"
+    BOOST_VERSION=`curl -s 'https://github.com/boostorg/boost/tags' | grep -o "boost-\([0-9]\+\.[0-9]\+\.[0-9]\+\)\"" | cut -d"-" -f2 | cut -d"\"" -f1 | head -1`
+    if [[ "$BOOST_VERSION" == "" ]]; then
+      echo "Failed to determine latest boost version from https://github.com/boostorg/boost/tags"
+      exit 1
+    fi
+    echo "Detected the latest boost version from https://github.com/boostorg/boost/tags to be version $BOOST_VERSION"
     BOOST_VERSION2="${BOOST_VERSION//./_}"
     BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
     BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
