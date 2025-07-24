@@ -257,7 +257,7 @@ parseArgs()
                     BOOST_VERSION=$2
                     BOOST_VERSION2="${BOOST_VERSION/beta./b}"
                     BOOST_VERSION2="${BOOST_VERSION2//./_}"
-                    BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
+                    BOOST_TARBALL="$CURRENT_DIR/src/boost-$BOOST_VERSION-b2-nodocs.tar.gz"
                     BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
                     shift
                 else
@@ -449,7 +449,7 @@ downloadBoost()
     mkdir -p "$(dirname $BOOST_TARBALL)"
 
     if [ ! -s $BOOST_TARBALL ]; then
-        URL=https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION2}.tar.bz2
+        URL=https://github.com/boostorg/boost/releases/download/boost-${BOOST_VERSION}/boost-${BOOST_VERSION}-b2-nodocs.tar.gz
         echo "Downloading boost ${BOOST_VERSION} from $URL"
         curl -L -o "$BOOST_TARBALL" $URL
         doneSection
@@ -499,7 +499,7 @@ unpackBoost()
     echo Unpacking boost into "$SRCDIR"...
 
     [ -d $SRCDIR ]    || mkdir -p "$SRCDIR"
-    [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xfj "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
+    [ -d $BOOST_SRC ] || ( mkdir -p "$BOOST_SRC"; tar xf "$BOOST_TARBALL" --strip-components 1 -C "$BOOST_SRC") || exit 1
     echo "    ...unpacked as $BOOST_SRC"
 
     changeNamespace
@@ -1474,7 +1474,7 @@ if [[ -z $BOOST_VERSION ]]; then
     fi
     echo "Detected the latest boost version from https://github.com/boostorg/boost/tags to be version $BOOST_VERSION"
     BOOST_VERSION2="${BOOST_VERSION//./_}"
-    BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
+    BOOST_TARBALL="$CURRENT_DIR/src/boost-$BOOST_VERSION-b2-nodocs.tar.gz"
     BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
 fi
 
@@ -1528,7 +1528,7 @@ else
    EXTRA_LINUX_FLAGS="$EXTRA_FLAGS"
 fi
 
-BOOST_TARBALL="$CURRENT_DIR/src/boost_$BOOST_VERSION2.tar.bz2"
+BOOST_TARBALL="$CURRENT_DIR/src/boost-$BOOST_VERSION-b2-nodocs.tar.gz"
 BOOST_SRC="$SRCDIR/boost/${BOOST_VERSION}"
 OUTPUT_DIR="$CURRENT_DIR/target/outputs/boost/$BOOST_VERSION/$BOOST_PLATFORM"
 BUILD_DIR="$OUTPUT_DIR/build"
