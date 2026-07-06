@@ -1,0 +1,48 @@
+--- boost/numeric/conversion/udt_builtin_mixture_enum.hpp.orig	2026-07-06 16:30:41
++++ boost/numeric/conversion/udt_builtin_mixture_enum.hpp	2026-07-06 16:37:05
+@@ -14,10 +14,12 @@
+ {
+   enum udt_builtin_mixture_enum
+   {
+-     builtin_to_builtin
++     _udt_mpl_lo_ = -1
++    ,builtin_to_builtin
+     ,builtin_to_udt
+     ,udt_to_builtin
+     ,udt_to_udt
++    ,_udt_mpl_hi_
+   } ;
+ 
+ } } // namespace boost_1_73_0::numeric
+--- boost/numeric/conversion/int_float_mixture_enum.hpp.orig	2026-07-06 16:35:44
++++ boost/numeric/conversion/int_float_mixture_enum.hpp	2026-07-06 16:37:06
+@@ -14,10 +14,12 @@
+ {
+   enum int_float_mixture_enum
+   {
+-     integral_to_integral
++     _ifm_mpl_lo_ = -1
++    ,integral_to_integral
+     ,integral_to_float
+     ,float_to_integral
+     ,float_to_float
++    ,_ifm_mpl_hi_
+   } ;
+ 
+ } } // namespace boost_1_73_0::numeric
+--- boost/numeric/conversion/sign_mixture_enum.hpp.orig	2026-07-06 16:37:22
++++ boost/numeric/conversion/sign_mixture_enum.hpp	2026-07-06 16:38:06
+@@ -14,10 +14,12 @@
+ {
+   enum sign_mixture_enum
+   {
+-     unsigned_to_unsigned
++     _sm_mpl_lo_ = -1
++    ,unsigned_to_unsigned
+     ,signed_to_signed
+     ,signed_to_unsigned
+     ,unsigned_to_signed
++    , _sm_mpl_hi_
+   } ;
+ 
+ } } // namespace boost_1_73_0::numeric
