@@ -449,7 +449,7 @@ downloadBoost()
     mkdir -p "$(dirname $BOOST_TARBALL)"
 
     if [ ! -s $BOOST_TARBALL ]; then
-        URL=https://boostorg.jfrog.io/artifactory/main/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION2}.tar.bz2
+        URL=https://archives.boost.io/release/${BOOST_VERSION}/source/boost_${BOOST_VERSION2}.tar.bz2
         echo "Downloading boost ${BOOST_VERSION} from $URL"
         curl -L -o "$BOOST_TARBALL" $URL
         doneSection
@@ -495,6 +495,17 @@ patchForXcode()
       # constant expressions. Boost.MPL's integral_c computes prior/next which can
       # overflow enum bounds. Fix by adding sentinel values to extend the valid range.
       (cd "$BOOST_SRC" && patch --forward -p1 -d "$BOOST_SRC/tools/build" < "$CURRENT_DIR/patches/xcode-26.5.patch")
+
+      doneSection
+    fi
+  elif [ "$(version "$BOOST_VERSION")" -le "$(version "1.91.0")" ]; then
+    if [ "$(version "$XCODE_VERSION")" -ge "$(version "26.5")" ]; then
+      echo "Patching boost (for Xcode 26.5) in $BOOST_SRC"
+
+      # Apple Clang 21+ makes casting out-of-range integers to enums a hard error in
+      # constant expressions. Boost.MPL's integral_c computes prior/next which can
+      # overflow enum bounds. Fix by adding sentinel values to extend the valid range.
+      (cd "$BOOST_SRC" && patch --forward -p0 -d "$BOOST_SRC" < "$CURRENT_DIR/patches/xcode-26.5.patch")
 
       doneSection
     fi
